@@ -1,0 +1,14 @@
+[
+    {
+        "code": "en",
+        "name": "English",
+        "countryCode": "GB",
+        "enabled": true
+    },
+    {
+        "code": "ar",
+        "name": "العربية",
+        "countryCode": "SA",
+        "enabled": true
+    }
+]

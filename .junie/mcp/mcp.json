@@ -1,0 +1,11 @@
+{
+    "mcpServers": {
+        "laravel-boost": {
+            "command": "C:\\laragon\\bin\\php\\php-8.3.3-Win32-vs16-x64\\php.exe",
+            "args": [
+                "C:\\Users\\USer\\Downloads\\codecanyon-TX1TyAuf-hrm-saas-hr-and-payroll-tool\\hr\\artisan",
+                "boost:mcp"
+            ]
+        }
+    }
+}
