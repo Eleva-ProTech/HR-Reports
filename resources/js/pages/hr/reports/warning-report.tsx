@@ -10,6 +10,7 @@ import { SummaryCard } from './components/summary-card';
 import { ShieldAlert, InboxIcon, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
+import { ExportButton } from './components/export-button';
 
 export default function WarningReport() {
   const { t } = useTranslation();

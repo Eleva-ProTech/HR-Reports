@@ -5,7 +5,7 @@ import { usePage, router } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Plus, Eye, Edit, Trash2, Lock, Unlock, MoreHorizontal, Key } from 'lucide-react';
+import { Plus, Eye, Edit, Trash2, Lock, Unlock, MoreHorizontal, Key, UploadCloud, Download } from 'lucide-react';
 import { hasPermission } from '@/utils/authorization';
 import { CrudTable } from '@/components/CrudTable';
 import { CrudDeleteModal } from '@/components/CrudDeleteModal';
@@ -14,12 +14,13 @@ import { useInitials } from '@/hooks/use-initials';
 import { useTranslation } from 'react-i18next';
 import { Pagination } from '@/components/ui/pagination';
 import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
-import {CrudFormModal} from '@/components/CrudFormModal';
+import { CrudFormModal } from '@/components/CrudFormModal';
 import { getImagePath } from '@/utils/helpers';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export default function Employees() {
   const { t } = useTranslation();
-  const { auth, employees, branches, planLimits,departments, designations, filters: pageFilters = {} } = usePage().props as any;
+  const { auth, employees, branches, planLimits, departments, designations, filters: pageFilters = {}, importSummary } = usePage().props as any;
   const permissions = auth?.permissions || [];
   const getInitials = useInitials();
   
@@ -33,6 +34,8 @@ export default function Employees() {
   const [showFilters, setShowFilters] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [importValidationErrors, setImportValidationErrors] = useState<Record<string, string | string[]>>({});
   const [currentItem, setCurrentItem] = useState<any>(null);
   
   // Check if any filters are active

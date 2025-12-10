@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { Users, UserPlus, UserMinus, Percent } from 'lucide-react';
+import { ExportButton } from './components/export-button';
 
 declare const window: any;
 

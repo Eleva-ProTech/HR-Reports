@@ -10,6 +10,7 @@ import { SummaryCard } from './components/summary-card';
 import { CalendarRange, ClipboardCheck, ClipboardList, Clock4 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
+import { ExportButton } from './components/export-button';
 
 export default function LeaveReport() {
   const { t } = useTranslation();
@@ -173,7 +174,9 @@ export default function LeaveReport() {
 
         <Card>
           <CardContent className="space-y-4 pt-6">
-            <SearchAndFilterBar
+            <div className="flex justify-between items-center mb-4">
+              <div className="flex-1">
+                <SearchAndFilterBar
               searchTerm={searchTerm}
               onSearchChange={setSearchTerm}
               onSearch={handleSearch}
@@ -247,6 +250,21 @@ export default function LeaveReport() {
                 })
               }
             />
+            </div>
+              <ExportButton 
+                exportRoute={route('hr.reports.leaves.export')}
+                filters={{
+                  search: searchTerm,
+                  branch_id: branchId,
+                  department_id: departmentId,
+                  employee_id: employeeId,
+                  status: status,
+                  leave_type_id: leaveTypeId,
+                  date_from: serializeDate(dateFrom),
+                  date_to: serializeDate(dateTo),
+                }}
+              />
+            </div>
 
             <div className="rounded-lg border">
               <Table>

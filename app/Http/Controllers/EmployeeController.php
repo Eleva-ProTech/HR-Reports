@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\EmployeeImportRequest;
+use App\Models\AttendancePolicy;
 use App\Models\Branch;
 use App\Models\Department;
 use App\Models\Designation;
@@ -9,13 +11,17 @@ use App\Models\DocumentType;
 use App\Models\Employee;
 use App\Models\EmployeeDocument;
 use App\Models\User;
+use Carbon\Carbon;
 use Spatie\Permission\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class EmployeeController extends Controller
 {
@@ -722,5 +728,484 @@ class EmployeeController extends Controller
         }
 
         return response()->download($filePath);
+    }
+
+    /**
+     * Download the employee import template.
+     */
+    public function downloadImportTemplate(): StreamedResponse
+    {
+        $columns = array_keys($this->getEmployeeImportColumns());
+        $sampleRows = $this->getImportSampleRows();
+
+        return response()->streamDownload(function () use ($columns, $sampleRows) {
+            $handle = fopen('php://output', 'w');
+            fputcsv($handle, $columns);
+
+            foreach ($sampleRows as $sampleRow) {
+                $row = [];
+                foreach ($columns as $column) {
+                    $row[] = $sampleRow[$column] ?? '';
+                }
+                fputcsv($handle, $row);
+            }
+            fclose($handle);
+        }, 'employee_import_template.csv', [
+            'Content-Type' => 'text/csv',
+        ]);
+    }
+
+    /**
+     * Import employees from a CSV file.
+     */
+    public function import(EmployeeImportRequest $request)
+    {
+        $file = $request->file('file');
+        if (!$file) {
+            return redirect()->back()->with('error', __('Unable to process the uploaded file.'));
+        }
+
+        $planInfo = $this->getPlanAvailabilityForImport();
+        if ($planInfo && $planInfo['remaining'] <= 0) {
+            return redirect()->back()->with('error', __('Employee limit exceeded. Please upgrade your plan or remove users before importing more employees.'));
+        }
+
+        $handle = fopen($file->getRealPath(), 'rb');
+        if ($handle === false) {
+            return redirect()->back()->with('error', __('Unable to open the uploaded file.'));
+        }
+
+        $config = $this->getEmployeeImportColumns();
+        $requiredColumns = array_keys(array_filter($config, fn ($column) => $column['required'] ?? false));
+        $header = null;
+        $rowNumber = 1;
+        $results = [
+            'processed' => 0,
+            'created' => 0,
+            'skipped' => 0,
+            'errors' => [],
+        ];
+        $companyUserIds = getCompanyAndUsersId();
+
+        try {
+            while (($row = fgetcsv($handle, 0, ',')) !== false) {
+                if ($header === null) {
+                    if ($this->isRowEmpty($row)) {
+                        continue;
+                    }
+
+                    $header = array_map(fn ($value) => $this->sanitizeHeaderValue($value), $row);
+                    $missingColumns = array_diff($requiredColumns, $header);
+
+                    if (!empty($missingColumns)) {
+                        return redirect()
+                            ->back()
+                            ->with('error', __('The uploaded file is missing the required columns: :columns', ['columns' => implode(', ', $missingColumns)]));
+                    }
+                    continue;
+                }
+
+                $rowNumber++;
+
+                if ($this->isRowEmpty($row)) {
+                    continue;
+                }
+
+                $results['processed']++;
+                $rowData = $this->mapRowValues($header, $row);
+                foreach ($rowData as $key => $value) {
+                    $rowData[$key] = $this->sanitizeCellValue($value);
+                }
+
+                $missingValues = [];
+                foreach ($requiredColumns as $column) {
+                    if (!array_key_exists($column, $rowData) || $rowData[$column] === null) {
+                        $missingValues[] = $column;
+                    }
+                }
+
+                if (!empty($missingValues)) {
+                    $this->recordImportError($results, $rowNumber, __('Missing required values for: :columns', ['columns' => implode(', ', $missingValues)]));
+                    continue;
+                }
+
+                if ($planInfo && $planInfo['remaining'] <= 0) {
+                    $this->recordImportError($results, $rowNumber, __('Plan limit reached. Remaining rows were skipped.'));
+                    break;
+                }
+
+                if (User::where('email', $rowData['email'])->exists()) {
+                    $this->recordImportError($results, $rowNumber, __('Email ":email" already exists.', ['email' => $rowData['email']]));
+                    continue;
+                }
+
+                if (Employee::where('employee_id', $rowData['employee_id'])->exists()) {
+                    $this->recordImportError($results, $rowNumber, __('Employee ID ":employeeId" already exists.', ['employeeId' => $rowData['employee_id']]));
+                    continue;
+                }
+
+                $branchId = $this->resolveOwnedEntityId(Branch::class, $rowData['branch_id'], $companyUserIds);
+                if (!$branchId) {
+                    $this->recordImportError($results, $rowNumber, __('Invalid branch reference.'));
+                    continue;
+                }
+
+                $departmentId = $this->resolveOwnedEntityId(Department::class, $rowData['department_id'], $companyUserIds);
+                if (!$departmentId) {
+                    $this->recordImportError($results, $rowNumber, __('Invalid department reference.'));
+                    continue;
+                }
+
+                $designationId = $this->resolveOwnedEntityId(Designation::class, $rowData['designation_id'], $companyUserIds);
+                if (!$designationId) {
+                    $this->recordImportError($results, $rowNumber, __('Invalid designation reference.'));
+                    continue;
+                }
+
+                $shiftId = $this->resolveOwnedEntityId(\App\Models\Shift::class, $rowData['shift_id'] ?? null, $companyUserIds);
+                $attendancePolicyId = $this->resolveOwnedEntityId(AttendancePolicy::class, $rowData['attendance_policy_id'] ?? null, $companyUserIds);
+
+                $gender = $rowData['gender'] ? strtolower($rowData['gender']) : null;
+                if ($gender && !in_array($gender, ['male', 'female', 'other'])) {
+                    $gender = 'other';
+                }
+
+                $statusValue = $rowData['status'] ?? null;
+                $status = $statusValue ? strtolower($statusValue) : 'active';
+                $status = in_array($status, ['active', 'inactive'], true) ? $status : 'active';
+
+                $dateOfBirth = $this->parseDateValue($rowData['date_of_birth'] ?? null);
+                $dateOfJoining = $this->parseDateValue($rowData['date_of_joining'] ?? null);
+
+                try {
+                    DB::transaction(function () use (
+                        $rowData,
+                        $branchId,
+                        $departmentId,
+                        $designationId,
+                        $shiftId,
+                        $attendancePolicyId,
+                        $gender,
+                        $status,
+                        $dateOfBirth,
+                        $dateOfJoining
+                    ) {
+                        $user = new User();
+                        $user->name = $rowData['name'];
+                        $user->email = $rowData['email'] ??  uniqid($rowData['employee_id'] . '@') . config('app.url');
+                        $user->password = Hash::make($rowData['password'] ?? Str::random(12));
+                        $user->type = 'employee';
+                        $user->lang = 'en';
+                        $user->created_by = creatorId();
+                        $user->status = $status;
+                        $user->save();
+
+                        if (isSaaS()) {
+                            $employeeRole = Role::where('created_by', createdBy())->where('name', 'employee')->first();
+                        } else {
+                            $employeeRole = Role::where('name', 'employee')->first();
+                        }
+
+                        if ($employeeRole) {
+                            $user->assignRole($employeeRole);
+                        }
+
+                        $employee = new Employee();
+                        $employee->user_id = $user->id;
+                        $employee->employee_id = $rowData['employee_id'];
+                        $employee->phone = $rowData['phone'];
+                        $employee->date_of_birth = $dateOfBirth;
+                        $employee->gender = $gender;
+                        $employee->branch_id = $branchId;
+                        $employee->department_id = $departmentId;
+                        $employee->designation_id = $designationId;
+                        $employee->shift_id = $shiftId;
+                        $employee->attendance_policy_id = $attendancePolicyId;
+                        $employee->date_of_joining = $dateOfJoining;
+                        $employee->employment_type = $rowData['employment_type'];
+                        $employee->employment_status = $rowData['employment_status'] ?? 'active';
+                        $employee->address_line_1 = $rowData['address_line_1'];
+                        $employee->address_line_2 = $rowData['address_line_2'];
+                        $employee->city = $rowData['city'];
+                        $employee->state = $rowData['state'];
+                        $employee->country = $rowData['country'];
+                        $employee->postal_code = $rowData['postal_code'];
+                        $employee->emergency_contact_name = $rowData['emergency_contact_name'];
+                        $employee->emergency_contact_relationship = $rowData['emergency_contact_relationship'];
+                        $employee->emergency_contact_number = $rowData['emergency_contact_number'];
+                        $employee->bank_name = $rowData['bank_name'];
+                        $employee->account_holder_name = $rowData['account_holder_name'] ?? null;
+                        $employee->account_number = $rowData['account_number'] ?? null;
+                        $employee->bank_identifier_code = $rowData['bank_identifier_code'] ?? null;
+                        $employee->bank_branch = $rowData['bank_branch'] ?? null;
+                        $employee->tax_payer_id = $rowData['tax_payer_id'] ?? null;
+                        $employee->created_by = creatorId();
+                        $employee->save();
+                    });
+
+                    $results['created']++;
+                    if ($planInfo) {
+                        $planInfo['remaining']--;
+                    }
+                } catch (\Throwable $exception) {
+                    $this->recordImportError($results, $rowNumber, __('Unexpected error: :message', ['message' => $exception->getMessage()]));
+                }
+            }
+        } finally {
+            fclose($handle);
+        }
+
+        if ($header === null) {
+            return redirect()->back()->with('error', __('The uploaded file does not contain any data.'));
+        }
+
+        $message = __('Employee import completed. :created created, :skipped skipped.', [
+            'created' => $results['created'],
+            'skipped' => $results['skipped'],
+        ]);
+
+        return redirect()->route('hr.employees.index')
+            ->with('success', $message)
+            ->with('import_summary', $results);
+    }
+
+    /**
+     * Column definitions for the import template.
+     */
+    private function getEmployeeImportColumns(): array
+    {
+        return [
+            'employee_id' => ['required' => true],
+            'name' => ['required' => true],
+            'email' => ['required' => false],
+            'password' => ['required' => false],
+            'phone' => ['required' => true],
+            'date_of_birth' => ['required' => true],
+            'gender' => ['required' => true],
+            'branch_id' => ['required' => true],
+            'department_id' => ['required' => true],
+            'designation_id' => ['required' => true],
+            'shift_id' => ['required' => false],
+            'attendance_policy_id' => ['required' => false],
+            'date_of_joining' => ['required' => true],
+            'employment_type' => ['required' => true],
+            'employment_status' => ['required' => true],
+            'status' => ['required' => false],
+            'address_line_1' => ['required' => true],
+            'address_line_2' => ['required' => true],
+            'city' => ['required' => true],
+            'state' => ['required' => true],
+            'country' => ['required' => true],
+            'postal_code' => ['required' => true],
+            'emergency_contact_name' => ['required' => true],
+            'emergency_contact_relationship' => ['required' => true],
+            'emergency_contact_number' => ['required' => true],
+            'bank_name' => ['required' => true],
+            'account_holder_name' => ['required' => false],
+            'account_number' => ['required' => false],
+            'bank_identifier_code' => ['required' => false],
+            'bank_branch' => ['required' => false],
+            'tax_payer_id' => ['required' => false],
+        ];
+    }
+
+    /**
+     * Provide example rows for the template to help users.
+     */
+    private function getImportSampleRows(): array
+    {
+        return [
+            [
+                'employee_id' => 'EMP-1001',
+                'name' => 'John Doe',
+                'email' => 'john.doe@example.com',
+                'password' => 'password123',
+                'phone' => '+1-202-555-0198',
+                'date_of_birth' => '1990-04-12',
+                'gender' => 'male',
+                'branch_id' => '1',
+                'department_id' => '1',
+                'designation_id' => '1',
+                'shift_id' => '1',
+                'attendance_policy_id' => '1',
+                'date_of_joining' => '2024-01-15',
+                'employment_type' => 'Full-time',
+                'employment_status' => 'active',
+                'status' => 'active',
+                'address_line_1' => '123 Main Street',
+                'address_line_2' => 'Suite 100',
+                'city' => 'New York',
+                'state' => 'NY',
+                'country' => 'USA',
+                'postal_code' => '10001',
+                'emergency_contact_name' => 'Jane Doe',
+                'emergency_contact_relationship' => 'Spouse',
+                'emergency_contact_number' => '+1-202-555-0145',
+                'bank_name' => 'First National Bank',
+                'account_holder_name' => 'John Doe',
+                'account_number' => '1234567890',
+                'bank_identifier_code' => 'FNBUUS33',
+                'bank_branch' => 'Downtown',
+                'tax_payer_id' => 'TAX-98541',
+            ],
+            [
+                'employee_id' => 'EMP-1002',
+                'name' => 'Sara Khan',
+                'email' => 'sara.khan@example.com',
+                'password' => 'welcome@2024',
+                'phone' => '+44-20-5550-1234',
+                'date_of_birth' => '1992-09-05',
+                'gender' => 'female',
+                'branch_id' => '2',
+                'department_id' => '2',
+                'designation_id' => '3',
+                'shift_id' => null,
+                'attendance_policy_id' => null,
+                'date_of_joining' => '2024-03-01',
+                'employment_type' => 'Contract',
+                'employment_status' => 'probation',
+                'status' => 'active',
+                'address_line_1' => '456 Market Road',
+                'address_line_2' => '',
+                'city' => 'London',
+                'state' => '',
+                'country' => 'United Kingdom',
+                'postal_code' => 'SW1A 1AA',
+                'emergency_contact_name' => 'Amin Khan',
+                'emergency_contact_relationship' => 'Brother',
+                'emergency_contact_number' => '+44-20-5550-8888',
+                'bank_name' => 'Royal Bank',
+                'account_holder_name' => 'Sara Khan',
+                'account_number' => '9988776655',
+                'bank_identifier_code' => 'RBOSGB2L',
+                'bank_branch' => 'Central',
+                'tax_payer_id' => 'UK-TAX-7788',
+            ],
+        ];
+    }
+
+    private function sanitizeHeaderValue(?string $value): string
+    {
+        $value = $value ?? '';
+        $value = preg_replace('/\x{FEFF}/u', '', $value);
+        return strtolower(trim($value));
+    }
+
+    private function sanitizeCellValue($value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        if (is_string($value)) {
+            $value = trim($value);
+        }
+
+        return $value === '' ? null : (string) $value;
+    }
+
+    private function isRowEmpty(array $row): bool
+    {
+        foreach ($row as $value) {
+            if (trim((string) $value) !== '') {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private function mapRowValues(array $header, array $row): array
+    {
+        $mapped = [];
+        foreach ($header as $index => $column) {
+            $mapped[$column] = $row[$index] ?? null;
+        }
+        return $mapped;
+    }
+
+    private function resolveOwnedEntityId(string $modelClass, ?string $value, array $companyUserIds): ?int
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $value = trim($value);
+        if ($value === '') {
+            return null;
+        }
+
+        $query = $modelClass::query()->whereIn('created_by', $companyUserIds);
+
+        if (is_numeric($value)) {
+            $entity = (clone $query)->where('id', (int) $value)->first();
+            if ($entity) {
+                return (int) $entity->id;
+            }
+        }
+
+        $nameMatch = (clone $query)
+            ->whereRaw('LOWER(name) = ?', [strtolower($value)])
+            ->value('id');
+
+        return $nameMatch ? (int) $nameMatch : null;
+    }
+
+    private function parseDateValue(?string $value): ?string
+    {
+        if (!$value) {
+            return null;
+        }
+
+        try {
+            return Carbon::parse($value)->format('Y-m-d');
+        } catch (\Exception $exception) {
+            return null;
+        }
+    }
+
+    private function getPlanAvailabilityForImport(): ?array
+    {
+        if (!isSaas()) {
+            return null;
+        }
+
+        $authUser = Auth::user();
+        if (!$authUser) {
+            return null;
+        }
+
+        if ($authUser->type === 'superadmin') {
+            return null;
+        }
+
+        $companyUser = $authUser->type === 'company'
+            ? $authUser
+            : ($authUser->created_by ? User::find($authUser->created_by) : null);
+
+        if (!$companyUser || !$companyUser->plan) {
+            return null;
+        }
+
+        $currentUserCount = User::where('type', 'employee')
+            ->whereIn('created_by', getCompanyAndUsersId())
+            ->count();
+
+        $maxEmployees = (int) $companyUser->plan->max_employees;
+        $remaining = max($maxEmployees - $currentUserCount, 0);
+
+        return [
+            'max' => $maxEmployees,
+            'current' => $currentUserCount,
+            'remaining' => $remaining,
+        ];
+    }
+
+    private function recordImportError(array &$results, int $rowNumber, string $message): void
+    {
+        $results['errors'][] = [
+            'row' => $rowNumber,
+            'message' => $message,
+        ];
+        $results['skipped']++;
     }
 }

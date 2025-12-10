@@ -811,4 +811,549 @@ class HrReportController extends Controller
 
         return $series;
     }
+
+    public function exportAbsenceReport(Request $request): StreamedResponse
+    {
+        $query = AttendanceRecord::with([
+                'employee',
+                'employee.employee',
+                'employee.employee.branch',
+                'employee.employee.department',
+                'shift',
+            ])
+            ->whereIn('created_by', getCompanyAndUsersId())
+            ->where(function (Builder $builder) {
+                $builder->where('is_absent', true)
+                    ->orWhere('status', 'absent');
+            });
+
+        $this->applyEmployeeFilters($query, $request);
+        $this->applySearchFilter($query, $request);
+        $this->applyDateFilter($query, $request, 'date');
+
+        $records = $query->orderBy('date', 'desc')->get();
+
+        return $this->generateExcelResponse($records, 'absence-report', [
+            'Employee Name',
+            'Employee Email',
+            'Branch',
+            'Department',
+            'Shift',
+            'Date',
+            'Status',
+            'Notes',
+        ], function ($record) {
+            $employee = $record->employee;
+            $profile = $employee?->employee;
+            return [
+                $employee?->name ?? '',
+                $employee?->email ?? '',
+                $profile?->branch?->name ?? 'Not Assigned',
+                $profile?->department?->name ?? 'Not Assigned',
+                $record->shift?->name ?? '-',
+                $record->date ? Carbon::parse($record->date)->format('Y-m-d') : '-',
+                'Absent',
+                $record->notes ?? '',
+            ];
+        });
+    }
+
+    public function exportLatenessReport(Request $request): StreamedResponse
+    {
+        $query = AttendanceRecord::with([
+                'employee',
+                'employee.employee',
+                'employee.employee.branch',
+                'employee.employee.department',
+                'shift',
+            ])
+            ->whereIn('created_by', getCompanyAndUsersId())
+            ->where('is_late', true);
+
+        $this->applyEmployeeFilters($query, $request);
+        $this->applySearchFilter($query, $request);
+        $this->applyDateFilter($query, $request, 'date');
+
+        $records = $query->orderBy('date', 'desc')->get();
+
+        return $this->generateExcelResponse($records, 'lateness-report', [
+            'Employee Name',
+            'Employee Email',
+            'Branch',
+            'Department',
+            'Shift',
+            'Date',
+            'Check In',
+            'Expected Time',
+            'Late Minutes',
+            'Notes',
+        ], function ($record) {
+            $employee = $record->employee;
+            $profile = $employee?->employee;
+            return [
+                $employee?->name ?? '',
+                $employee?->email ?? '',
+                $profile?->branch?->name ?? 'Not Assigned',
+                $profile?->department?->name ?? 'Not Assigned',
+                $record->shift?->name ?? '-',
+                $record->date ? Carbon::parse($record->date)->format('Y-m-d') : '-',
+                $record->check_in ? Carbon::parse($record->check_in)->format('H:i:s') : '-',
+                $record->shift?->start_time ?? '-',
+                $record->late_minutes ?? '0',
+                $record->notes ?? '',
+            ];
+        });
+    }
+
+    public function exportLeaveReport(Request $request): StreamedResponse
+    {
+        $query = LeaveApplication::with([
+                'employee',
+                'employee.employee',
+                'employee.employee.branch',
+                'employee.employee.department',
+                'leaveType',
+            ])
+            ->whereIn('created_by', getCompanyAndUsersId());
+
+        $this->applyEmployeeFilters($query, $request);
+        $this->applySearchFilter($query, $request);
+        $this->applyLeaveDateFilters($query, $request);
+
+        if ($request->filled('status') && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('leave_type_id')) {
+            $query->where('leave_type_id', $request->leave_type_id);
+        }
+
+        $records = $query->orderBy('start_date', 'desc')->get();
+
+        return $this->generateExcelResponse($records, 'leave-report', [
+            'Employee Name',
+            'Employee Email',
+            'Branch',
+            'Department',
+            'Leave Type',
+            'Start Date',
+            'End Date',
+            'Total Days',
+            'Status',
+            'Reason',
+        ], function ($record) {
+            $employee = $record->employee;
+            $profile = $employee?->employee;
+            return [
+                $employee?->name ?? '',
+                $employee?->email ?? '',
+                $profile?->branch?->name ?? 'Not Assigned',
+                $profile?->department?->name ?? 'Not Assigned',
+                $record->leaveType?->name ?? '-',
+                $record->start_date ? Carbon::parse($record->start_date)->format('Y-m-d') : '-',
+                $record->end_date ? Carbon::parse($record->end_date)->format('Y-m-d') : '-',
+                $record->total_days ?? '0',
+                ucfirst($record->status ?? 'pending'),
+                $record->reason ?? '',
+            ];
+        });
+    }
+
+    public function exportMedicalExcuseReport(Request $request): StreamedResponse
+    {
+        $query = LeaveApplication::with([
+                'employee',
+                'employee.employee',
+                'employee.employee.branch',
+                'employee.employee.department',
+                'leaveType',
+            ])
+            ->whereIn('created_by', getCompanyAndUsersId())
+            ->where(function (Builder $builder) {
+                $builder->whereHas('leaveType', function (Builder $typeQuery) {
+                    $typeQuery->where('name', 'like', '%medical%')
+                        ->orWhere('name', 'like', '%sick%')
+                        ->orWhere('name', 'like', '%health%');
+                })
+                ->orWhere('reason', 'like', '%medical%')
+                ->orWhere('reason', 'like', '%doctor%');
+            });
+
+        $this->applyEmployeeFilters($query, $request);
+        $this->applySearchFilter($query, $request);
+        $this->applyLeaveDateFilters($query, $request);
+
+        if ($request->filled('status') && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+
+        $records = $query->orderBy('start_date', 'desc')->get();
+
+        return $this->generateExcelResponse($records, 'medical-excuse-report', [
+            'Employee Name',
+            'Employee Email',
+            'Branch',
+            'Department',
+            'Leave Type',
+            'Start Date',
+            'End Date',
+            'Total Days',
+            'Status',
+            'Reason',
+        ], function ($record) {
+            $employee = $record->employee;
+            $profile = $employee?->employee;
+            return [
+                $employee?->name ?? '',
+                $employee?->email ?? '',
+                $profile?->branch?->name ?? 'Not Assigned',
+                $profile?->department?->name ?? 'Not Assigned',
+                $record->leaveType?->name ?? '-',
+                $record->start_date ? Carbon::parse($record->start_date)->format('Y-m-d') : '-',
+                $record->end_date ? Carbon::parse($record->end_date)->format('Y-m-d') : '-',
+                $record->total_days ?? '0',
+                ucfirst($record->status ?? 'pending'),
+                $record->reason ?? '',
+            ];
+        });
+    }
+
+    public function exportWarningReport(Request $request): StreamedResponse
+    {
+        $query = Warning::with([
+                'employee',
+                'employee.employee',
+                'employee.employee.branch',
+                'employee.employee.department',
+                'issuer',
+            ])
+            ->whereIn('created_by', getCompanyAndUsersId());
+
+        $this->applyEmployeeFilters($query, $request);
+        $this->applySearchFilter($query, $request, ['subject', 'warning_type']);
+        $this->applyDateFilter($query, $request, 'warning_date');
+
+        if ($request->filled('status') && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('severity') && $request->severity !== 'all') {
+            $query->where('severity', $request->severity);
+        }
+
+        $records = $query->orderBy('warning_date', 'desc')->get();
+
+        return $this->generateExcelResponse($records, 'warning-report', [
+            'Employee Name',
+            'Employee Email',
+            'Branch',
+            'Department',
+            'Subject',
+            'Warning Type',
+            'Severity',
+            'Warning Date',
+            'Status',
+            'Issued By',
+        ], function ($record) {
+            $employee = $record->employee;
+            $profile = $employee?->employee;
+            return [
+                $employee?->name ?? '',
+                $employee?->email ?? '',
+                $profile?->branch?->name ?? 'Not Assigned',
+                $profile?->department?->name ?? 'Not Assigned',
+                $record->subject ?? '-',
+                $record->warning_type ?? '-',
+                ucfirst($record->severity ?? '-'),
+                $record->warning_date ? Carbon::parse($record->warning_date)->format('Y-m-d') : '-',
+                ucfirst($record->status ?? 'draft'),
+                $record->issuer?->name ?? '-',
+            ];
+        });
+    }
+
+    public function exportExpiredContractsReport(Request $request): StreamedResponse
+    {
+        $today = Carbon::today();
+
+        $query = EmployeeContract::with([
+                'employee',
+                'employee.employee',
+                'employee.employee.branch',
+                'employee.employee.department',
+                'contractType',
+            ])
+            ->whereIn('created_by', getCompanyAndUsersId())
+            ->where(function (Builder $builder) use ($today) {
+                $builder->where('status', 'expired')
+                    ->orWhereDate('end_date', '<', $today);
+            });
+
+        $this->applyEmployeeFilters($query, $request);
+        $this->applySearchFilter($query, $request);
+        $this->applyDateFilter($query, $request, 'end_date');
+
+        if ($request->filled('contract_type_id')) {
+            $query->where('contract_type_id', $request->contract_type_id);
+        }
+
+        $records = $query->orderBy('end_date', 'desc')->get();
+
+        return $this->generateExcelResponse($records, 'expired-contracts-report', [
+            'Employee Name',
+            'Employee Email',
+            'Branch',
+            'Department',
+            'Contract Type',
+            'Start Date',
+            'End Date',
+            'Duration (Days)',
+            'Status',
+        ], function ($record) {
+            $employee = $record->employee;
+            $profile = $employee?->employee;
+            $duration = $record->start_date && $record->end_date
+                ? Carbon::parse($record->start_date)->diffInDays(Carbon::parse($record->end_date))
+                : 0;
+            return [
+                $employee?->name ?? '',
+                $employee?->email ?? '',
+                $profile?->branch?->name ?? 'Not Assigned',
+                $profile?->department?->name ?? 'Not Assigned',
+                $record->contractType?->name ?? '-',
+                $record->start_date ? Carbon::parse($record->start_date)->format('Y-m-d') : '-',
+                $record->end_date ? Carbon::parse($record->end_date)->format('Y-m-d') : '-',
+                $duration,
+                ucfirst($record->status ?? 'active'),
+            ];
+        });
+    }
+
+    public function exportTrainingReport(Request $request): StreamedResponse
+    {
+        $query = EmployeeTraining::with([
+                'employee',
+                'employee.employee',
+                'employee.employee.branch',
+                'employee.employee.department',
+                'trainingProgram',
+            ])
+            ->whereIn('created_by', getCompanyAndUsersId());
+
+        $this->applyEmployeeFilters($query, $request);
+        $this->applySearchFilter($query, $request);
+        $this->applyDateFilter($query, $request, 'assigned_date');
+
+        if ($request->filled('status') && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('training_program_id')) {
+            $query->where('training_program_id', $request->training_program_id);
+        }
+
+        $records = $query->orderBy('assigned_date', 'desc')->get();
+
+        return $this->generateExcelResponse($records, 'training-report', [
+            'Employee Name',
+            'Employee Email',
+            'Branch',
+            'Department',
+            'Training Program',
+            'Assigned Date',
+            'Start Date',
+            'End Date',
+            'Status',
+            'Score',
+        ], function ($record) {
+            $employee = $record->employee;
+            $profile = $employee?->employee;
+            return [
+                $employee?->name ?? '',
+                $employee?->email ?? '',
+                $profile?->branch?->name ?? 'Not Assigned',
+                $profile?->department?->name ?? 'Not Assigned',
+                $record->trainingProgram?->name ?? '-',
+                $record->assigned_date ? Carbon::parse($record->assigned_date)->format('Y-m-d') : '-',
+                $record->start_date ? Carbon::parse($record->start_date)->format('Y-m-d') : '-',
+                $record->end_date ? Carbon::parse($record->end_date)->format('Y-m-d') : '-',
+                ucfirst($record->status ?? 'assigned'),
+                $record->score ?? '-',
+            ];
+        });
+    }
+
+    public function exportResignationReport(Request $request): StreamedResponse
+    {
+        $query = Resignation::with([
+                'employee',
+                'employee.employee',
+                'employee.employee.branch',
+                'employee.employee.department',
+                'approver',
+            ])
+            ->whereIn('created_by', getCompanyAndUsersId());
+
+        $this->applyEmployeeFilters($query, $request);
+        $this->applySearchFilter($query, $request);
+        $this->applyDateFilter($query, $request, 'resignation_date');
+
+        if ($request->filled('status') && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+
+        $records = $query->orderBy('resignation_date', 'desc')->get();
+
+        return $this->generateExcelResponse($records, 'resignation-report', [
+            'Employee Name',
+            'Employee Email',
+            'Branch',
+            'Department',
+            'Resignation Date',
+            'Last Working Day',
+            'Notice Period (Days)',
+            'Reason',
+            'Status',
+            'Approved By',
+        ], function ($record) {
+            $employee = $record->employee;
+            $profile = $employee?->employee;
+            return [
+                $employee?->name ?? '',
+                $employee?->email ?? '',
+                $profile?->branch?->name ?? 'Not Assigned',
+                $profile?->department?->name ?? 'Not Assigned',
+                $record->resignation_date ? Carbon::parse($record->resignation_date)->format('Y-m-d') : '-',
+                $record->last_working_day ? Carbon::parse($record->last_working_day)->format('Y-m-d') : '-',
+                $record->notice_period ?? '0',
+                $record->reason ?? '',
+                ucfirst($record->status ?? 'pending'),
+                $record->approver?->name ?? '-',
+            ];
+        });
+    }
+
+    public function exportTurnoverReport(Request $request): StreamedResponse
+    {
+        [$startDate, $endDate] = $this->resolveDateRange($request);
+
+        $employeeQuery = $this->employeeProfileQuery($request);
+
+        $hireRecords = (clone $employeeQuery)
+            ->whereNotNull('date_of_joining')
+            ->whereBetween('date_of_joining', [$startDate, $endDate])
+            ->get();
+
+        $resignationBase = Resignation::with(['employee', 'employee.employee.branch', 'employee.employee.department'])
+            ->whereIn('created_by', getCompanyAndUsersId())
+            ->whereIn('status', ['approved', 'completed']);
+        $this->applyEmployeeFilters($resignationBase, $request);
+        $resignationRecords = (clone $resignationBase)
+            ->whereNotNull('last_working_day')
+            ->whereBetween('last_working_day', [$startDate, $endDate])
+            ->get();
+
+        $terminationBase = Termination::with(['employee', 'employee.employee.branch', 'employee.employee.department'])
+            ->whereIn('created_by', getCompanyAndUsersId())
+            ->whereIn('status', ['approved', 'completed']);
+        $this->applyEmployeeFilters($terminationBase, $request);
+        $terminationRecords = (clone $terminationBase)
+            ->whereNotNull('termination_date')
+            ->whereBetween('termination_date', [$startDate, $endDate])
+            ->get();
+
+        $combinedData = [];
+
+        foreach ($hireRecords as $employee) {
+            $profile = $employee;
+            $combinedData[] = [
+                $employee->user?->name ?? '',
+                $employee->user?->email ?? '',
+                $profile?->branch?->name ?? 'Not Assigned',
+                $profile?->department?->name ?? 'Not Assigned',
+                'New Hire',
+                $employee->date_of_joining ? Carbon::parse($employee->date_of_joining)->format('Y-m-d') : '-',
+                '-',
+                '-',
+            ];
+        }
+
+        foreach ($resignationRecords as $resignation) {
+            $profile = $resignation->employee->employee;
+            $combinedData[] = [
+                $resignation->employee?->name ?? '',
+                $resignation->employee?->email ?? '',
+                $profile?->branch?->name ?? 'Not Assigned',
+                $profile?->department?->name ?? 'Not Assigned',
+                'Resignation',
+                $resignation->resignation_date ? Carbon::parse($resignation->resignation_date)->format('Y-m-d') : '-',
+                $resignation->last_working_day ? Carbon::parse($resignation->last_working_day)->format('Y-m-d') : '-',
+                ucfirst($resignation->status ?? 'pending'),
+            ];
+        }
+
+        foreach ($terminationRecords as $termination) {
+            $profile = $termination->employee->employee;
+            $combinedData[] = [
+                $termination->employee?->name ?? '',
+                $termination->employee?->email ?? '',
+                $profile?->branch?->name ?? 'Not Assigned',
+                $profile?->department?->name ?? 'Not Assigned',
+                'Termination',
+                $termination->termination_date ? Carbon::parse($termination->termination_date)->format('Y-m-d') : '-',
+                '-',
+                ucfirst($termination->status ?? 'pending'),
+            ];
+        }
+
+        $filename = 'turnover-report-' . date('Y-m-d') . '.csv';
+
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ];
+
+        $callback = function () use ($combinedData) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, [
+                'Employee Name',
+                'Employee Email',
+                'Branch',
+                'Department',
+                'Type',
+                'Event Date',
+                'Last Working Day',
+                'Status',
+            ]);
+
+            foreach ($combinedData as $row) {
+                fputcsv($file, $row);
+            }
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    private function generateExcelResponse(Collection $records, string $reportName, array $headers, callable $rowMapper): StreamedResponse
+    {
+        $filename = $reportName . '-' . date('Y-m-d') . '.csv';
+
+        $httpHeaders = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ];
+
+        $callback = function () use ($records, $headers, $rowMapper) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, $headers);
+
+            foreach ($records as $record) {
+                fputcsv($file, $rowMapper($record));
+            }
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $httpHeaders);
+    }
 }

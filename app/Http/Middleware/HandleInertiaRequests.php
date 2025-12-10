@@ -114,6 +114,7 @@ class HandleInertiaRequests extends Middleware
                 'success' => $request->session()->get('success'),
                 'error'   => $request->session()->get('error'),
             ],
+            'importSummary' => $request->session()->get('import_summary'),
             'globalSettings' => $globalSettings,
             'is_demo' => env('IS_DEMO', false)
         ];

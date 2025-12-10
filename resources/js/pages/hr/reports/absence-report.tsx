@@ -10,6 +10,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { SummaryCard } from './components/summary-card';
 import { Users, CalendarDays, AlertTriangle, Clock3 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { ExportButton } from './components/export-button';
 
 export default function AbsenceReport() {
   const { t } = useTranslation();
@@ -135,7 +136,9 @@ export default function AbsenceReport() {
 
         <Card>
           <CardContent className="space-y-4 pt-6">
-            <SearchAndFilterBar
+            <div className="flex justify-between items-center mb-4">
+              <div className="flex-1">
+                <SearchAndFilterBar
               searchTerm={searchTerm}
               onSearchChange={setSearchTerm}
               onSearch={handleSearch}
@@ -193,6 +196,19 @@ export default function AbsenceReport() {
                 })
               }
             />
+            </div>
+              <ExportButton 
+                exportRoute={route('hr.reports.absence.export')}
+                filters={{
+                  search: searchTerm,
+                  branch_id: branchId,
+                  department_id: departmentId,
+                  employee_id: employeeId,
+                  date_from: serializeDate(dateFrom),
+                  date_to: serializeDate(dateTo),
+                }}
+              />
+            </div>
 
             <div className="rounded-lg border">
               <Table>

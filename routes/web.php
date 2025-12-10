@@ -357,6 +357,8 @@ Route::middleware(['auth', 'verified', 'setting'])->group(function () {
             Route::get('hr/employees', [EmployeeController::class, 'index'])->name('hr.employees.index');
             Route::get('hr/employees/create', [EmployeeController::class, 'create'])->middleware('permission:create-employees')->name('hr.employees.create');
             Route::post('hr/employees', [EmployeeController::class, 'store'])->middleware('permission:create-employees')->name('hr.employees.store');
+            Route::get('hr/employees/import/template', [EmployeeController::class, 'downloadImportTemplate'])->middleware('permission:create-employees')->name('hr.employees.import.template');
+            Route::post('hr/employees/import', [EmployeeController::class, 'import'])->middleware('permission:create-employees')->name('hr.employees.import');
             Route::get('hr/employees/{employee}', [EmployeeController::class, 'show'])->middleware('permission:view-employees')->name('hr.employees.show');
             Route::get('hr/employees/{employee}/edit', [EmployeeController::class, 'edit'])->middleware('permission:edit-employees')->name('hr.employees.edit');
             Route::put('hr/employees/{employee}', [EmployeeController::class, 'update'])->middleware('permission:edit-employees')->name('hr.employees.update');

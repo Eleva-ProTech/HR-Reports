@@ -10,6 +10,7 @@ import { SummaryCard } from './components/summary-card';
 import { CalendarX, AlarmClock, Hourglass } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
+import { ExportButton } from './components/export-button';
 
 declare const window: any;
 

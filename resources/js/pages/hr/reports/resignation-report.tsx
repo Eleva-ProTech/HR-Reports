@@ -10,6 +10,7 @@ import { SummaryCard } from './components/summary-card';
 import { LogOut, Clock3, CheckCircle2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
+import { ExportButton } from './components/export-button';
 
 export default function ResignationReport() {
   const { t } = useTranslation();
