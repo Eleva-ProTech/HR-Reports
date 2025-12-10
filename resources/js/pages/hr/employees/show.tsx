@@ -210,14 +210,6 @@ export default function EmployeeShow() {
                     <span className="text-sm">{employee.employee.employment_type}</span>
                   </div>
                 )}
-                  {
-                      employee.employee?.attendance_policy?.name && (
-                          <div className="flex items-center">
-                              <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
-                              <span className="text-sm">{employee.employee.attendance_policy.name}</span>
-                          </div>
-                      )
-                  }
               </div>
             </div>
           </CardContent>
@@ -266,6 +258,10 @@ export default function EmployeeShow() {
                       <h4 className="text-sm font-medium text-muted-foreground">{t('Gender')}</h4>
                       <p>{employee.employee?.gender ? t(employee.employee.gender.charAt(0).toUpperCase() + employee.employee.gender.slice(1)) : '-'}</p>
                     </div>
+                      <div>
+                          <h4 className="text-sm font-medium text-muted-foreground">{t('National ID')}</h4>
+                          <p>{employee.employee?.national_id || '-'}</p>
+                      </div>
                   </div>
                 </CardContent>
               </Card>
