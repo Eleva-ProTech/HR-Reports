@@ -37,7 +37,8 @@ class Employee extends Model
         'bank_identifier_code',
         'bank_branch',
         'tax_payer_id',
-        'created_by'
+        'created_by',
+        'national_id',
     ];
 
     /**

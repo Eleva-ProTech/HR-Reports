@@ -834,11 +834,6 @@ class EmployeeController extends Controller
                     break;
                 }
 
-                if (User::where('email', $rowData['email'])->exists()) {
-                    $this->recordImportError($results, $rowNumber, __('Email ":email" already exists.', ['email' => $rowData['email']]));
-                    continue;
-                }
-
                 if (Employee::where('employee_id', $rowData['employee_id'])->exists()) {
                     $this->recordImportError($results, $rowNumber, __('Employee ID ":employeeId" already exists.', ['employeeId' => $rowData['employee_id']]));
                     continue;
@@ -863,7 +858,6 @@ class EmployeeController extends Controller
                 }
 
                 $shiftId = $this->resolveOwnedEntityId(\App\Models\Shift::class, $rowData['shift_id'] ?? null, $companyUserIds);
-                $attendancePolicyId = $this->resolveOwnedEntityId(AttendancePolicy::class, $rowData['attendance_policy_id'] ?? null, $companyUserIds);
 
                 $gender = $rowData['gender'] ? strtolower($rowData['gender']) : null;
                 if ($gender && !in_array($gender, ['male', 'female', 'other'])) {
@@ -884,7 +878,6 @@ class EmployeeController extends Controller
                         $departmentId,
                         $designationId,
                         $shiftId,
-                        $attendancePolicyId,
                         $gender,
                         $status,
                         $dateOfBirth,
@@ -892,7 +885,7 @@ class EmployeeController extends Controller
                     ) {
                         $user = new User();
                         $user->name = $rowData['name'];
-                        $user->email = $rowData['email'] ??  uniqid($rowData['employee_id'] . '@') . config('app.url');
+                        $user->email = uniqid($rowData['employee_id'] . '@') . 'gamail.com';
                         $user->password = Hash::make($rowData['password'] ?? Str::random(12));
                         $user->type = 'employee';
                         $user->lang = 'en';
@@ -913,32 +906,16 @@ class EmployeeController extends Controller
                         $employee = new Employee();
                         $employee->user_id = $user->id;
                         $employee->employee_id = $rowData['employee_id'];
-                        $employee->phone = $rowData['phone'];
                         $employee->date_of_birth = $dateOfBirth;
-                        $employee->gender = $gender;
+                        $employee->gender = $gender == 'M' ? 'male' : 'female';
                         $employee->branch_id = $branchId;
                         $employee->department_id = $departmentId;
                         $employee->designation_id = $designationId;
                         $employee->shift_id = $shiftId;
-                        $employee->attendance_policy_id = $attendancePolicyId;
                         $employee->date_of_joining = $dateOfJoining;
                         $employee->employment_type = $rowData['employment_type'];
-                        $employee->employment_status = $rowData['employment_status'] ?? 'active';
-                        $employee->address_line_1 = $rowData['address_line_1'];
-                        $employee->address_line_2 = $rowData['address_line_2'];
-                        $employee->city = $rowData['city'];
-                        $employee->state = $rowData['state'];
-                        $employee->country = $rowData['country'];
-                        $employee->postal_code = $rowData['postal_code'];
-                        $employee->emergency_contact_name = $rowData['emergency_contact_name'];
-                        $employee->emergency_contact_relationship = $rowData['emergency_contact_relationship'];
-                        $employee->emergency_contact_number = $rowData['emergency_contact_number'];
-                        $employee->bank_name = $rowData['bank_name'];
-                        $employee->account_holder_name = $rowData['account_holder_name'] ?? null;
-                        $employee->account_number = $rowData['account_number'] ?? null;
-                        $employee->bank_identifier_code = $rowData['bank_identifier_code'] ?? null;
-                        $employee->bank_branch = $rowData['bank_branch'] ?? null;
-                        $employee->tax_payer_id = $rowData['tax_payer_id'] ?? null;
+//                        $employee->employment_status = $rowData['employment_status'] ?? 'active';
+                        $employee->national_id = $rowData['national_id'];
                         $employee->created_by = creatorId();
                         $employee->save();
                     });
@@ -977,35 +954,17 @@ class EmployeeController extends Controller
         return [
             'employee_id' => ['required' => true],
             'name' => ['required' => true],
-            'email' => ['required' => false],
-            'password' => ['required' => false],
-            'phone' => ['required' => true],
             'date_of_birth' => ['required' => true],
             'gender' => ['required' => true],
             'branch_id' => ['required' => true],
             'department_id' => ['required' => true],
             'designation_id' => ['required' => true],
-            'shift_id' => ['required' => false],
-            'attendance_policy_id' => ['required' => false],
+            'shift_id' => ['required' => true],
             'date_of_joining' => ['required' => true],
             'employment_type' => ['required' => true],
             'employment_status' => ['required' => true],
-            'status' => ['required' => false],
-            'address_line_1' => ['required' => true],
-            'address_line_2' => ['required' => true],
-            'city' => ['required' => true],
-            'state' => ['required' => true],
-            'country' => ['required' => true],
-            'postal_code' => ['required' => true],
-            'emergency_contact_name' => ['required' => true],
-            'emergency_contact_relationship' => ['required' => true],
-            'emergency_contact_number' => ['required' => true],
-            'bank_name' => ['required' => true],
-            'account_holder_name' => ['required' => false],
-            'account_number' => ['required' => false],
-            'bank_identifier_code' => ['required' => false],
-            'bank_branch' => ['required' => false],
-            'tax_payer_id' => ['required' => false],
+            'status' => ['required' => true],
+            'national_id' => ['required' => true],
         ];
     }
 
@@ -1018,68 +977,32 @@ class EmployeeController extends Controller
             [
                 'employee_id' => 'EMP-1001',
                 'name' => 'John Doe',
-                'email' => 'john.doe@example.com',
-                'password' => 'password123',
-                'phone' => '+1-202-555-0198',
                 'date_of_birth' => '1990-04-12',
-                'gender' => 'male',
+                'gender' => 'M',
                 'branch_id' => '1',
                 'department_id' => '1',
                 'designation_id' => '1',
                 'shift_id' => '1',
-                'attendance_policy_id' => '1',
                 'date_of_joining' => '2024-01-15',
                 'employment_type' => 'Full-time',
                 'employment_status' => 'active',
                 'status' => 'active',
-                'address_line_1' => '123 Main Street',
-                'address_line_2' => 'Suite 100',
-                'city' => 'New York',
-                'state' => 'NY',
-                'country' => 'USA',
-                'postal_code' => '10001',
-                'emergency_contact_name' => 'Jane Doe',
-                'emergency_contact_relationship' => 'Spouse',
-                'emergency_contact_number' => '+1-202-555-0145',
-                'bank_name' => 'First National Bank',
-                'account_holder_name' => 'John Doe',
-                'account_number' => '1234567890',
-                'bank_identifier_code' => 'FNBUUS33',
-                'bank_branch' => 'Downtown',
-                'tax_payer_id' => 'TAX-98541',
+                'national_id' => '1234567890',
             ],
             [
                 'employee_id' => 'EMP-1002',
                 'name' => 'Sara Khan',
-                'email' => 'sara.khan@example.com',
-                'password' => 'welcome@2024',
-                'phone' => '+44-20-5550-1234',
                 'date_of_birth' => '1992-09-05',
-                'gender' => 'female',
+                'gender' => 'F',
                 'branch_id' => '2',
                 'department_id' => '2',
                 'designation_id' => '3',
-                'shift_id' => null,
-                'attendance_policy_id' => null,
+                'shift_id' => '1',
                 'date_of_joining' => '2024-03-01',
                 'employment_type' => 'Contract',
-                'employment_status' => 'probation',
+                'employment_status' => 'active',
                 'status' => 'active',
-                'address_line_1' => '456 Market Road',
-                'address_line_2' => '',
-                'city' => 'London',
-                'state' => '',
-                'country' => 'United Kingdom',
-                'postal_code' => 'SW1A 1AA',
-                'emergency_contact_name' => 'Amin Khan',
-                'emergency_contact_relationship' => 'Brother',
-                'emergency_contact_number' => '+44-20-5550-8888',
-                'bank_name' => 'Royal Bank',
-                'account_holder_name' => 'Sara Khan',
-                'account_number' => '9988776655',
-                'bank_identifier_code' => 'RBOSGB2L',
-                'bank_branch' => 'Central',
-                'tax_payer_id' => 'UK-TAX-7788',
+                'national_id' => '12345678456'
             ],
         ];
     }
