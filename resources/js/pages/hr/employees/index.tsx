@@ -1,5 +1,5 @@
 // pages/hr/employees/index.tsx
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { PageTemplate } from '@/components/page-template';
 import { usePage, router } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,8 @@ import { SearchAndFilterBar } from '@/components/ui/search-and-filter-bar';
 import { CrudFormModal } from '@/components/CrudFormModal';
 import { getImagePath } from '@/utils/helpers';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 
 export default function Employees() {
   const { t } = useTranslation();
@@ -35,8 +37,14 @@ export default function Employees() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [importFile, setImportFile] = useState<File | null>(null);
   const [importValidationErrors, setImportValidationErrors] = useState<Record<string, string | string[]>>({});
   const [currentItem, setCurrentItem] = useState<any>(null);
+  const [showImportSummary, setShowImportSummary] = useState<boolean>(!!importSummary);
+
+  useEffect(() => {
+    setShowImportSummary(!!importSummary);
+  }, [importSummary]);
   
   // Check if any filters are active
   const hasActiveFilters = () => {
@@ -109,6 +117,64 @@ export default function Employees() {
   
   const handleAddNew = () => {
     router.get(route('hr.employees.create'));
+  };
+
+  const handleDownloadTemplate = () => {
+    window.location.href = route('hr.employees.import.template');
+  };
+
+  const closeImportModal = () => {
+    setIsImportModalOpen(false);
+    setImportValidationErrors({});
+    setImportFile(null);
+  };
+
+  const handleImportSubmit = (event?: React.FormEvent) => {
+    event?.preventDefault();
+
+    if (!importFile) {
+      setImportValidationErrors({
+        file: t('Please select the CSV template generated from the example file.')
+      });
+      return;
+    }
+
+    toast.loading(t('Importing employees...'));
+
+    router.post(route('hr.employees.import'), { file: importFile }, {
+      forceFormData: true,
+      onSuccess: (page) => {
+        closeImportModal();
+        toast.dismiss();
+        if (page.props.flash?.success) {
+          toast.success(t(page.props.flash.success));
+        } else if (page.props.flash?.error) {
+          toast.error(t(page.props.flash.error));
+        } else {
+          toast.success(t('Employee import completed.'));
+        }
+      },
+      onError: (errors) => {
+        toast.dismiss();
+        if (errors && typeof errors === 'object') {
+          setImportValidationErrors(errors as Record<string, string | string[]>);
+          toast.error(t('Please fix the highlighted issues and try again.'));
+        } else if (typeof errors === 'string') {
+          toast.error(t(errors));
+        } else {
+          toast.error(t('Unable to import employees. Please try again.'));
+        }
+      }
+    });
+  };
+
+  const getImportError = (field: string): string | null => {
+    const fieldError = importValidationErrors[field];
+    if (!fieldError) {
+      return null;
+    }
+
+    return Array.isArray(fieldError) ? fieldError[0] : fieldError;
   };
   
   const handleDeleteConfirm = () => {
@@ -210,6 +276,26 @@ export default function Employees() {
       variant: canCreate ? 'default' : 'outline',
       onClick: canCreate ? () => handleAddNew() : () => toast.error(t('Employee limit exceeded. Your plan allows maximum {{max}} users. Please upgrade your plan.', { max: planLimits.max_users })),
       disabled: !canCreate
+    });
+
+    pageActions.push({
+      label: t('Import CSV'),
+      icon: <UploadCloud className="h-4 w-4 mr-2" />,
+      variant: 'outline',
+      onClick: canCreate
+        ? () => {
+            setImportValidationErrors({});
+            setImportFile(null);
+            setIsImportModalOpen(true);
+          }
+        : () => toast.error(t('Employee limit exceeded. Your plan allows maximum {{max}} users. Please upgrade your plan.', { max: planLimits?.max_users })),
+    });
+
+    pageActions.push({
+      label: t('Download Example CSV'),
+      icon: <Download className="h-4 w-4 mr-2" />,
+      variant: 'outline',
+      onClick: handleDownloadTemplate
     });
   }
 
@@ -372,6 +458,57 @@ export default function Employees() {
       breadcrumbs={breadcrumbs}
       noPadding
     >
+      {importSummary && showImportSummary && (
+        <div className="mb-4">
+          <Alert className="relative border-blue-200 bg-blue-50 text-blue-900 dark:border-blue-800 dark:bg-blue-950/30 dark:text-blue-50">
+            <AlertTitle>{t('Employee import summary')}</AlertTitle>
+            <AlertDescription className="w-full">
+              <div className="flex flex-wrap gap-6 text-sm">
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">{t('Processed')}</p>
+                  <p className="text-lg font-semibold text-blue-900 dark:text-blue-50">{importSummary.processed || 0}</p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">{t('Created')}</p>
+                  <p className="text-lg font-semibold text-green-600 dark:text-green-400">{importSummary.created || 0}</p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">{t('Skipped')}</p>
+                  <p className="text-lg font-semibold text-amber-600 dark:text-amber-400">{importSummary.skipped || 0}</p>
+                </div>
+              </div>
+
+              {Array.isArray(importSummary.errors) && importSummary.errors.length > 0 && (
+                <div className="mt-4 w-full">
+                  <p className="text-sm font-medium text-red-600 dark:text-red-400">{t('Rows with issues')}</p>
+                  <ul className="mt-2 max-h-32 w-full space-y-1 overflow-y-auto text-xs text-red-600 dark:text-red-300">
+                    {importSummary.errors.slice(0, 5).map((error: any, index: number) => (
+                      <li key={`${error?.row ?? index}-${index}`}>
+                        <span className="font-semibold">{t('Row {{row}}', { row: error?.row ?? t('Unknown') })}:</span> {error?.message}
+                      </li>
+                    ))}
+                  </ul>
+                  {importSummary.errors.length > 5 && (
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      {t('+{{count}} more issues', { count: importSummary.errors.length - 5 })}
+                    </p>
+                  )}
+                </div>
+              )}
+            </AlertDescription>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="absolute right-2 top-2 text-xs text-muted-foreground hover:text-foreground"
+              onClick={() => setShowImportSummary(false)}
+              type="button"
+            >
+              {t('Dismiss')}
+            </Button>
+          </Alert>
+        </div>
+      )}
+
       {/* Search and filters section */}
       <div className="bg-white dark:bg-gray-900 rounded-lg shadow mb-4 p-4">
         <SearchAndFilterBar
@@ -652,6 +789,71 @@ export default function Employees() {
         title={t('Change Employee Password')}
         mode='edit'
       />
+
+      {/* Import Employees Modal */}
+      <Dialog
+        open={isImportModalOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            closeImportModal();
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{t('Import Employees')}</DialogTitle>
+            <DialogDescription>
+              {t('Upload the CSV template to create multiple employees at once. The file must follow the column order provided in the example template.')}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            <div className="rounded-lg border border-dashed border-blue-200 bg-blue-50/50 p-4 text-sm dark:border-blue-800 dark:bg-blue-950/30">
+              <p className="text-sm text-muted-foreground">
+                {t('Need a reference file? Download the example template which already includes the correct headers and two sample rows.')}
+              </p>
+              <Button variant="outline" size="sm" className="mt-3" onClick={handleDownloadTemplate}>
+                <Download className="mr-2 h-4 w-4" />
+                {t('Download Example CSV')}
+              </Button>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">{t('CSV File')}</label>
+              <Input
+                type="file"
+                accept=".csv,text/csv"
+                onChange={(event) => {
+                  const file = event.target.files?.[0] || null;
+                  setImportFile(file);
+                  if (file) {
+                    setImportValidationErrors((prev) => {
+                      const next = { ...prev };
+                      delete next.file;
+                      return next;
+                    });
+                  }
+                }}
+              />
+              <p className="text-xs text-muted-foreground">
+                {t('Only CSV files up to 5MB are supported. Use UTF-8 encoding to avoid character issues.')}
+              </p>
+              {getImportError('file') && (
+                <p className="text-xs text-red-600">{getImportError('file')}</p>
+              )}
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={closeImportModal}>
+              {t('Cancel')}
+            </Button>
+            <Button type="button" onClick={() => handleImportSubmit()}>
+              {t('Start Import')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </PageTemplate>
   );
 }
