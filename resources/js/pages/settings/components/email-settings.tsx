@@ -26,7 +26,7 @@ export default function EmailSettings() {
     password: settings.email_password ? '••••••••••••' : '',
     encryption: settings.email_encryption || 'tls',
     fromAddress: settings.email_from_address || 'noreply@example.com',
-    fromName: settings.email_from_name || 'ELEVA HR'
+    fromName: settings.email_from_name || 'Security HR'
   });
 
   // Test email state

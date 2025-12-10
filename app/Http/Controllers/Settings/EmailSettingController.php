@@ -28,7 +28,7 @@ class EmailSettingController extends Controller
             'password' => getSetting('email_password', ''),
             'encryption' => getSetting('email_encryption', 'tls'),
             'fromAddress' => getSetting('email_from_address', 'noreply@example.com'),
-            'fromName' => getSetting('email_from_name', 'ELEVA HR')
+            'fromName' => getSetting('email_from_name', 'Security HR')
         ];
 
         // Mask password if it exists
@@ -103,7 +103,7 @@ class EmailSettingController extends Controller
             'username' => getSetting('email_username', 'user@example.com'),
             'encryption' => getSetting('email_encryption', 'tls'),
             'fromAddress' => getSetting('email_from_address', 'noreply@example.com'),
-            'fromName' => getSetting('email_from_name', 'ELEVA HR')
+            'fromName' => getSetting('email_from_name', 'Security HR')
         ];
 
         // Get the actual password (not masked)

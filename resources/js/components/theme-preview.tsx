@@ -34,7 +34,7 @@ export function ThemePreview() {
 
   // Get title text
   const getTitleText = () => {
-    return 'ELEVA HR';
+    return 'Security HR';
   };
 
   return (

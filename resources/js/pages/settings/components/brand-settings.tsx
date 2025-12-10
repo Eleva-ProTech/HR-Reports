@@ -56,8 +56,8 @@ export const DEFAULT_BRAND_SETTINGS: BrandSettings = {
   logoDark: 'logo/logo-dark.png',
   logoLight: 'logo/logo-light.png',
   favicon: 'logo/favicon.ico',
-  titleText: 'ELEVA HR',
-  footerText: '© 2025 ELEVA HR. All rights reserved.',
+  titleText: 'Security HR',
+  footerText: '© 2025 Security HR. All rights reserved.',
   themeColor: 'green',
   customColor: '#3b82f6',
   sidebarVariant: 'inset',
@@ -457,7 +457,7 @@ export default function BrandSettings({ settings }: BrandSettingsProps) {
                     name="titleText"
                     value={brandSettings.titleText}
                     onChange={handleInputChange}
-                    placeholder="ELEVA HR"
+                    placeholder="Security HR"
                   />
                   <p className="text-xs text-muted-foreground">
                     {t("Application title displayed in the browser tab")}
@@ -471,7 +471,7 @@ export default function BrandSettings({ settings }: BrandSettingsProps) {
                     name="footerText"
                     value={brandSettings.footerText}
                     onChange={handleInputChange}
-                    placeholder="© 2024 ELEVA HR. All rights reserved."
+                    placeholder="© 2024 Security HR. All rights reserved."
                   />
                   <p className="text-xs text-muted-foreground">
                     {t("Text displayed in the footer")}
