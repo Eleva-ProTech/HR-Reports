@@ -27,7 +27,7 @@
     "Approve": "الموافقة",
     "Assets": "الأصول",
     "Assign To": "تعيين إلى",
-    "Assigned To": "مُعيّن",
+    "Assigned To": "تعيين إلى تاريخ",
     "Assignee": "المُتعهد",
     "Attachment": "إرفاق",
     "Attachments": "المرفقات",
@@ -552,7 +552,7 @@
     "Accepted": "قبلت",
     "File Name": "اسم الملف",
     "File Size": "حجم الملف",
-    "State\/Province": "الدولة\/المقاطعة",
+    "State/Province": "الدولة/المقاطعة",
     "Background Color": "لون الخلفية",
     "Change Status": "تغيير الحالة",
     "Contact Info": "معلومات الاتصال",
@@ -978,7 +978,7 @@
     "Failed to upgrade plan": "فشل في ترقية الخطة",
     "File Type": "نوع الملف",
     "Flat Amount": "مبلغ ثابت",
-    "For server-side API integration, use your Private Access Token (NOT your public key). You can find this in your MercadoPago Developer Dashboard under Credentials > Production\/Test Credentials > Access token.": "لدمج واجهة برمجة التطبيقات على جانب الخادم، استخدم رمز الوصول الخاص بك (وليس المفتاح العام). يمكنك العثور على هذا في لوحة MercadoPago للمطور تحت بيانات الاعتماد > بيانات الاعتماد الإنتاج \/ الاختبار > رمز الوصول.",
+    "For server-side API integration, use your Private Access Token (NOT your public key). You can find this in your MercadoPago Developer Dashboard under Credentials > Production/Test Credentials > Access token.": "لدمج واجهة برمجة التطبيقات على جانب الخادم، استخدم رمز الوصول الخاص بك (وليس المفتاح العام). يمكنك العثور على هذا في لوحة MercadoPago للمطور تحت بيانات الاعتماد > بيانات الاعتماد الإنتاج / الاختبار > رمز الوصول.",
     "GB": "المملكة المتحدة",
     "Get started by uploading your first media file": "ابدأ بتحميل ملف الوسائط الأول",
     "Get your Mercado Pago API credentials from your": "احصل على بيانات اعتماد Mercado Pago API من",
@@ -1541,7 +1541,7 @@
     "Manage application screenshots": "إدارة لقطات شاشة التطبيق",
     "Manage webhooks for external integrations": "إدارة شبكات الويب للدمج الخارجي",
     "Marketing Copy": "نسخة التسويق",
-    "Mastercard Credit\/Debit Cards": "بطاقات الائتمان\/الدفع",
+    "Mastercard Credit/Debit Cards": "بطاقات الائتمان/الدفع",
     "Max Result Length": "أقصى طول النتيجة",
     "Media deleted successfully": "تم حذف الوسائط بنجاح",
     "Midtrans Payment": "مدفوعات منتصف السنة",
@@ -1662,7 +1662,7 @@
     "PaymentWall Payment": "الدفعجدار الدفع",
     "PaymentWall not configured": "لا يوجد نظام لتحديد الدفع",
     "Paystack not configured": "لا يوجد تعديل على كومة الأجور",
-    "Pending Requests": "طلبات معلقة",
+    "Pending Requests": "الطلبات المعلقة",
     "Permission created successfully!": "تم إنشاء الإذن بنجاح",
     "Permission deleted successfully!": "تم حذف الأذون بنجاح",
     "Permission updated successfully!": "تم تحديث الإذن بنجاح",
@@ -1848,7 +1848,7 @@
     "Users who registered using your referral code": "المستخدمون الذين سجلوا باستخدام رمز الإحالة الخاص بك",
     "Users with Plans": "المستخدمون الذين لديهم خطط",
     "View Landing Page": "عرض الصفحة الرئيسية",
-    "Visa Credit\/Debit Cards": "بطاقات الائتمان\/الدفع الائتماني فيزا",
+    "Visa Credit/Debit Cards": "بطاقات الائتمان/الدفع الائتماني فيزا",
     "Want to Join Our Team?": "هل تريد الانضمام إلى فريقنا؟",
     "We typically respond within 24 hours...": "نحن عادةً نرد خلال 24 ساعة",
     "We're a diverse team of innovators...": "نحن فريق متنوع من المبتكرين",
@@ -1893,7 +1893,7 @@
     "Your trial period has expired. Please subscribe to a plan to continue.": "لقد انتهت فترة التجربة من فضلكم اشتركوا في خطة لمواصلة التجربة",
     "billing": "الفواتير",
     "cURL Error: ": "خطأ cURL:",
-    "prod\/test": "المنتج\/الاختبار",
+    "prod/test": "المنتج/الاختبار",
     "support@company.com": "دعم@شركة.كوم",
     "templates": "النماذج",
     "toyyibPay": "تويب باي",
@@ -1920,7 +1920,7 @@
     "Anonymous": "مجهول",
     "Average": "متوسط",
     "Issued": "تم إصداره",
-    "Effective Date": "تاريخ التنفيذ",
+    "Effective Date": "تاريخ النفاذ",
     "Return Asset": "العائد الأصول",
     "Add a call-to-action button to view all templates": "إضافة زر دعوة إلى العمل لعرض جميع القوالب",
     "CTA Button Link": "رابط زر CTA",
@@ -2049,7 +2049,7 @@
     "No Project": "لا مشروع",
     "Not Assigned": "غير مُعيّن",
     "Progress (%)": "التقدم (%)",
-    "contracts": "العقود",
+    "contracts": "عقود",
     "Failed to submit review": "فشل في تقديم مراجعة",
     "Expected Return": "العودة المتوقعة",
     "Salary Range": "نطاق الراتب",
@@ -2248,12 +2248,12 @@
     "All Interviewers": "جميع المقابلات",
     "All Leave Types": "جميع أنواع الإجازة",
     "All Organizers": "جميع المنظمين",
-    "All Programs": "جميع البرامج",
+    "All Programs": "كل البرامج",
     "All RSVP": "جميع الردود",
     "All Recommendations": "جميع التوصيات",
     "All Recorders": "جميع المسجلات",
     "All Review Cycles": "جميع دورات المراجعة",
-    "All Severities": "جميع الدرجات",
+    "All Severities": "كل مستويات الخطورة",
     "All Years": "كل السنوات",
     "All-in-One HR Solution": "حل موظفي الموارد البشرية الكامل",
     "Allocated": "تم تخصيص",
@@ -2263,7 +2263,7 @@
     "Allowances": "البدلات",
     "Already clocked in today.": "لقد سجلت بالفعل اليوم",
     "Already clocked out today.": "لقد انتهى اليوم بالفعل",
-    "Amount\/Percentage": "المبلغ\/النسبة المئوية",
+    "Amount/Percentage": "المبلغ/النسبة المئوية",
     "Announcement Dashboard": "لوحة تحكم الإعلانات",
     "Announcement Statistics": "إحصاءات الإعلان",
     "Announcement created successfully": "تم إنشاء الإعلان بنجاح",
@@ -2314,7 +2314,7 @@
     "Assign Document": "وثيقة التعيين",
     "Assign Document for Acknowledgment": "وثيقة التعيين للإقرار",
     "Assign Training": "إعطاء التدريب",
-    "Assigned From": "تم تعيينه من",
+    "Assigned From": "تعيين من تاريخ",
     "Assigned To Role": "مُعيّن لدور",
     "Assigning asset...": "...أعطي الأصول",
     "Assigning complaint...": "...تعيين الشكوى",
@@ -2369,7 +2369,7 @@
     "Back to Reviews": "العودة إلى المراجعات",
     "Back to Salaries": "العودة إلى الرواتب",
     "Back to Trips": "العودة إلى الرحلات",
-    "Bank Identifier Code (BIC\/SWIFT)": "رمز تحديد البنك (BIC\/SWIFT)",
+    "Bank Identifier Code (BIC/SWIFT)": "رمز تحديد البنك (BIC/SWIFT)",
     "Banking Information": "معلومات مصرفية",
     "Base Salary": "الراتب الأساسي",
     "Bi-Weekly": "مرتين في الأسبوع",
@@ -2813,7 +2813,7 @@
     "Employment Details": "تفاصيل التوظيف",
     "Employment Status": "وضع العمل",
     "End Date & Time": "تاريخ و وقت النهاية",
-    "End Date To": "تاريخ نهاية",
+    "End Date To": "تاريخ الانتهاء إلى",
     "Engagement Statistics": "إحصاءات التزام",
     "Enter acknowledgment note (optional)": "إدخال مذكرة الإقرار (اختياري)",
     "Enter announcement content...": "أدخل محتوى الإعلان...",
@@ -3101,7 +3101,7 @@
     "Mark this training as mandatory for employees": "ضع علامة على هذا التدريب كإجبارية للموظفين",
     "Max Budget": "الحد الأقصى للميزانية",
     "Max Days Per Application": "أقصى عدد أيام لكل طلب",
-    "Max Days\/Year": "أقصى عدد أيام\/سنة",
+    "Max Days/Year": "أقصى عدد أيام/سنة",
     "Max Experience (Years)": "الحد الأقصى من الخبرة (سنوات)",
     "Max Score": "الحد الأقصى للنتيجة",
     "Max file size: 10MB. Supported formats: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, TXT": "الحد الأقصى لحجم الملف: 10 ميغابايت. التنسيقات المدعومة: PDF، DOC، DOCX، XLS، XLSX، PPT، PPTX، TXT",
@@ -3289,7 +3289,7 @@
     "Policy Updates": "تحديثات السياسة",
     "Policy Violation": "انتهاك السياسة",
     "Portfolio URL": "عنوان المحفظة",
-    "Postal\/Zip Code": "الرمز البريدي\/الرسالة البريدية",
+    "Postal/Zip Code": "الرمز البريدي/الرسالة البريدية",
     "Practical": "عملي",
     "Prerequisites": "الشروط الأساسية",
     "Present": "الحاضر",
@@ -3510,7 +3510,7 @@
     "Strong Hire": "\"إستئجار قوي\"",
     "Strong Reject": "رفض قوي",
     "Submit Anonymously": "ارسل بدون اسم",
-    "Submitted On": "تم تقديمها في",
+    "Submitted On": "تاريخ التقديم",
     "Submitting interview feedback...": "إرسال ردود الفعل للمقابلة",
     "Submitting review...": "إرسال مراجعة...",
     "Summary of changes from current contract": "ملخص التغييرات من العقد الحالي",
@@ -3554,7 +3554,7 @@
     "Total Sessions": "إجمالي الجلسات",
     "Total Trainings": "إجمالي التدريبات",
     "Total Unpaid Leave": "إجمالي إجازة غير مدفوعة الأجر",
-    "Total Warnings": "مجموع التحذيرات",
+    "Total Warnings": "إجمالي الإنذارات",
     "Training Assessments": "تقييمات التدريب",
     "Training Dashboard": "لوحة تدريب",
     "Training Management": "إدارة التدريب",
@@ -3916,7 +3916,7 @@
     "You do not have permission to view this review": "ليس لديك الأذن لعرض هذا التعليق",
     "You do not have permission to view this training program": "ليس لديك الأذن لمشاهدة هذا البرنامج التدريبي",
     "You do not have permission to view this training session": "ليس لديك الأذون لرؤية هذه الدورة التدريبية",
-    "ZIP\/Postal Code": "رقم البريد البريدي",
+    "ZIP/Postal Code": "رقم البريد البريدي",
     "acknowledgments": "الإقرارات",
     "action items": "بنود العمل",
     "announcements": "الإعلانات",
@@ -3985,7 +3985,7 @@
     "present today": "الحاضر اليوم",
     "promotions": "الترقيات",
     "regularization requests": "طلبات التنظيم",
-    "resignations": "الاستقالة",
+    "resignations": "استقالات",
     "review cycles": "دورات المراجعة",
     "salary components": "مكونات الراتب",
     "shifts": "التحولات",
@@ -3996,6 +3996,104 @@
     "transfers": "تحويلات",
     "trips": "الرحلات",
     "variables": "المتغيرات",
-    "warnings": "تحذيرات",
-    "📢 New: Smart Leave & Attendance Tracking Launched!": " جديد: إطلاق إجازة ذكية وتتبع الحضور!"
+    "warnings": "إنذارات",
+    "📢 New: Smart Leave & Attendance Tracking Launched!": " جديد: إطلاق إجازة ذكية وتتبع الحضور!",
+    "HR Reports": "تقارير الموارد البشرية",
+    "Absence Report": "تقرير الغياب",
+    "Monitor employee absences and trends": "راقب غيابات الموظفين والاتجاهات",
+    "All recorded absences for the selected range": "جميع الغيابات المسجلة للفترة المحددة",
+    "Employees with at least one recorded absence": "الموظفون الذين لديهم غياب واحد على الأقل",
+    "Avg Absences / Employee": "متوسط الغياب لكل موظف",
+    "Average count per impacted employee": "متوسط العدد لكل موظف متأثر",
+    "Absences recorded this month": "الغيابات المسجلة هذا الشهر",
+    "No absences found for the selected filters": "لم يتم العثور على غيابات ضمن عوامل التصفية المحددة",
+    "Track repeated late arrivals and intervene early": "تتبع حالات التأخر المتكررة وتدخل مبكرًا",
+    "Lateness Report": "تقرير التأخر",
+    "Late Arrivals": "حالات التأخر",
+    "Occurrences within the selected range": "الحوادث ضمن المدى المحدد",
+    "Average occurrences per employee": "متوسط الحوادث لكل موظف",
+    "Late arrivals in the current month": "التأخر خلال هذا الشهر",
+    "Late arrival recorded": "تم تسجيل حالة تأخر",
+    "No late arrivals found for the selected filters": "لا توجد حالات تأخر ضمن عوامل التصفية المحددة",
+    "Starts at": "يبدأ عند",
+    "Employees reporting late at least once": "الموظفون الذين تأخروا مرة واحدة على الأقل",
+    "Understand leave utilization across your organization": "افهم استخدام الإجازات عبر مؤسستك",
+    "Total Requests": "إجمالي الطلبات",
+    "All leave requests in this window": "جميع طلبات الإجازة ضمن هذه الفترة",
+    "Approved Requests": "الطلبات المعتمدة",
+    "Requests that were approved": "الطلبات التي تم اعتمادها",
+    "Awaiting review or approval": "بانتظار المراجعة أو الاعتماد",
+    "Total Leave Days": "إجمالي أيام الإجازة",
+    "Days of leave requested": "أيام الإجازة المطلوبة",
+    "No leave requests found for the selected filters": "لا توجد طلبات إجازة ضمن عوامل التصفية المحددة",
+    "leave requests": "طلبات الإجازة",
+    "Validate and follow up on medical excused absences": "تحقق من الغيابات الطبية وتابعها",
+    "Medical Excuse Report": "تقرير الأعذار الطبية",
+    "Total Medical Excuses": "إجمالي الأعذار الطبية",
+    "All requests tagged as medical": "جميع الطلبات المصنفة كطبية",
+    "Pending Review": "بانتظار المراجعة",
+    "Waiting on medical verification": "بانتظار التحقق الطبي",
+    "Medical Evidence": "دليل طبي",
+    "Provided": "مرفق",
+    "Missing": "مفقود",
+    "Medical excuse submitted": "تم تقديم عذر طبي",
+    "No medical excuse requests found for the selected filters": "لا توجد طلبات أعذار طبية ضمن عوامل التصفية المحددة",
+    "medical excuses": "أعذار طبية",
+    "Stay on top of disciplinary actions and follow-ups": "تابع إجراءات الانضباط والمتابعة",
+    "Warning Report": "تقرير الإنذارات",
+    "Across the selected time range": "خلال النطاق الزمني المحدد",
+    "Open": "مفتوح",
+    "Draft or issued warnings": "إنذارات مسودة أو صادرة",
+    "Warnings confirmed by employees": "الإنذارات المعترف بها من الموظفين",
+    "Expired or elapsed warnings": "الإنذارات المنتهية أو المنقضية",
+    "All Warning Types": "كل أنواع الإنذارات",
+    "No warnings found for the selected filters": "لا توجد إنذارات ضمن عوامل التصفية المحددة",
+    "Identify contracts that need renewal or offboarding": "حدد العقود التي تحتاج إلى تجديد أو إنهاء",
+    "Expired Contracts Report": "تقرير العقود المنتهية",
+    "Expired Contracts": "العقود المنتهية",
+    "Contracts already past their end date": "العقود التي تجاوزت تاريخ الانتهاء",
+    "Expiring Soon": "ستنتهي قريبًا",
+    "Contracts ending within 30 days": "العقود التي تنتهي خلال 30 يومًا",
+    "Average Tenure": "متوسط مدة العقد",
+    "Average contract duration (start to end)": "متوسط مدة العقد (من البداية للنهاية)",
+    "All Contract Types": "كل أنواع العقود",
+    "End Date From": "تاريخ الانتهاء من",
+    "No expired contracts found for the selected filters": "لا توجد عقود منتهية ضمن عوامل التصفية المحددة",
+    "Measure progress on employee learning initiatives": "قم بقياس تقدم مبادرات التعلم للموظفين",
+    "Training Report": "تقرير التدريب",
+    "Assigned Trainings": "التدريبات المسندة",
+    "Assignments created in this range": "التعيينات التي تم إنشاؤها ضمن هذه الفترة",
+    "Employees that finished the training": "الموظفون الذين أتموا التدريب",
+    "Currently active trainings": "التدريبات النشطة حاليًا",
+    "Marked as failed or incomplete": "تم تعليمها كفاشلة أو غير مكتملة",
+    "No training records found for the selected filters": "لا توجد سجلات تدريب ضمن عوامل التصفية المحددة",
+    "trainings": "تدريبات",
+    "Keep track of voluntary exits and follow-up tasks": "تابع حالات الاستقالة الطوعية ومهام المتابعة",
+    "Resignation Report": "تقرير الاستقالات",
+    "Total Resignations": "إجمالي الاستقالات",
+    "Submissions within the selected range": "الطلبات ضمن النطاق المحدد",
+    "Pending Approvals": "بانتظار الموافقة",
+    "Awaiting approval or processing": "بانتظار الموافقة أو المعالجة",
+    "Approved Resignations": "الاستقالات المعتمدة",
+    "Approved exits pending completion": "الاستقالات المعتمدة بانتظار الإتمام",
+    "Submitted From": "تم التقديم من",
+    "Submitted To": "تم التقديم إلى",
+    "No resignations found for the selected filters": "لا توجد استقالات ضمن عوامل التصفية المحددة",
+    "Turnover Report": "تقرير معدل دوران الموظفين",
+    "Understand how hiring and separations impact your workforce": "افهم كيف يؤثر التوظيف والانفصال على القوى العاملة لديك",
+    "Current Headcount": "إجمالي الموظفين الحالي",
+    "Active employees within the company": "الموظفون النشطون ضمن الشركة",
+    "Average Headcount": "متوسط عدد الموظفين",
+    "Average for the selected range": "المتوسط للفترة المحددة",
+    "New Hires": "التعيينات الجديدة",
+    "Employees who joined in this period": "الموظفون الذين انضموا خلال هذه الفترة",
+    "Separations": "الانفصالات",
+    "Resignations and terminations": "الاستقالات وإنهاء الخدمات",
+    "No data available for the selected filters": "لا توجد بيانات متاحة لعوامل التصفية المحددة",
+    "Recent Hires": "أحدث التعيينات",
+    "No recent hires found": "لا توجد تعيينات حديثة",
+    "Recent Separations": "آخر حالات الانفصال",
+    "No recent separations found": "لا توجد حالات انفصال حديثة",
+    "Hires": "التعيينات",
+    "Turnover Rate": "معدل الدوران"
 }

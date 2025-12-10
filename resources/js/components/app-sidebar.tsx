@@ -901,21 +901,72 @@ export function AppSidebar() {
         // }
 
 
-        // Absence Report
-        //
-        // Lateness Report
-        //
-        // Leave Report
-        //
-        // Medical Excuse Report
-        //
-        // Warning Report
-        //
-        // Expired Contracts Report
-        //
-        // Training Report
-        //
-        // Resignations Report
+        const reportsChildren = [];
+
+        if (hasPermission(permissions, 'view-attendance-records')) {
+            reportsChildren.push({
+                title: t('Absence Report'),
+                href: route('hr.reports.absence')
+            });
+            reportsChildren.push({
+                title: t('Lateness Report'),
+                href: route('hr.reports.lateness')
+            });
+        }
+
+        if (hasPermission(permissions, 'view-leave-applications')) {
+            reportsChildren.push({
+                title: t('Leave Report'),
+                href: route('hr.reports.leaves')
+            });
+            reportsChildren.push({
+                title: t('Medical Excuse Report'),
+                href: route('hr.reports.medical')
+            });
+        }
+
+        if (hasPermission(permissions, 'view-warnings')) {
+            reportsChildren.push({
+                title: t('Warning Report'),
+                href: route('hr.reports.warnings')
+            });
+        }
+
+        if (hasPermission(permissions, 'view-employee-contracts')) {
+            reportsChildren.push({
+                title: t('Expired Contracts Report'),
+                href: route('hr.reports.expired-contracts')
+            });
+        }
+
+        if (hasPermission(permissions, 'view-employee-trainings')) {
+            reportsChildren.push({
+                title: t('Training Report'),
+                href: route('hr.reports.training')
+            });
+        }
+
+        if (hasPermission(permissions, 'view-resignations')) {
+            reportsChildren.push({
+                title: t('Resignation Report'),
+                href: route('hr.reports.resignations')
+            });
+        }
+
+        if (hasPermission(permissions, 'view-turnover-report')) {
+            reportsChildren.push({
+                title: t('Turnover Report'),
+                href: route('hr.reports.turnover')
+            });
+        }
+
+        if (reportsChildren.length > 0) {
+            items.push({
+                title: t('Reports'),
+                icon: BarChart,
+                children: reportsChildren
+            });
+        }
 
 
 

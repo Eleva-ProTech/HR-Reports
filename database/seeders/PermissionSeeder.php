@@ -873,6 +873,18 @@ class PermissionSeeder extends Seeder
             ['name' => 'manage-calendar', 'module' => 'calendar', 'label' => 'Manage Calendar', 'description' => 'Can manage calendar'],
             ['name' => 'view-calendar', 'module' => 'calendar', 'label' => 'View Calendar', 'description' => 'Can view calendar'],
 
+            // reports
+            ['name' => 'view-absence-report', 'module' => 'hr-reports', 'label' => 'View Absence Report', 'description' => 'Can view monthly absence report'],
+            ['name' => 'view-lateness-report', 'module' => 'hr-reports', 'label' => 'View Lateness Report', 'description' => 'Can view lateness report'],
+            ['name' => 'view-leave-report', 'module' => 'hr-reports', 'label' => 'View Leave Report', 'description' => 'Can view all leave reports'],
+            ['name' => 'view-medical-excuse-report', 'module' => 'hr-reports', 'label' => 'View Medical Excuse Report', 'description' => 'Can view medical excuse reports'],
+            ['name' => 'view-warning-report', 'module' => 'hr-reports', 'label' => 'View Warning Report', 'description' => 'Can view warnings reports'],
+            ['name' => 'view-expired-contracts-report', 'module' => 'hr-reports', 'label' => 'View Expired Contracts Report', 'description' => 'Can view expired employee contracts report'],
+            ['name' => 'view-training-report', 'module' => 'hr-reports', 'label' => 'View Training Report', 'description' => 'Can view training reports'],
+            ['name' => 'view-resignation-report', 'module' => 'hr-reports', 'label' => 'View Resignation Report', 'description' => 'Can view resignation reports'],
+
+            // Executive (High-level) Reports
+            ['name' => 'view-turnover-report', 'module' => 'hr-reports', 'label' => 'View Turnover Report', 'description' => 'Can view employee turnover report'],
         ];
 
         foreach ($permissions as $permission) {

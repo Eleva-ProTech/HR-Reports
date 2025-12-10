@@ -75,6 +75,7 @@ use App\Http\Controllers\CookieConsentController;
 
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\HrDocumentController;
+use App\Http\Controllers\HrReportController;
 use App\Http\Controllers\PerformanceIndicatorCategoryController;
 use App\Http\Controllers\PerformanceIndicatorController;
 use App\Http\Controllers\GoalTypeController;
@@ -1064,10 +1065,63 @@ Route::middleware(['auth', 'verified', 'setting'])->group(function () {
             Route::get('hr/payslips/{payslip}/download', [\App\Http\Controllers\PayslipController::class, 'download'])->middleware('permission:download-payslips')->name('hr.payslips.download');
         });
 
-
-
-
-
+        // HR Reports
+        Route::prefix('hr/reports')->name('hr.reports.')->group(function () {
+            Route::get('absences', [HrReportController::class, 'absenceReport'])
+                ->middleware('permission:view-attendance-records')
+                ->name('absence');
+            Route::get('absences/export', [HrReportController::class, 'exportAbsenceReport'])
+                ->middleware('permission:view-attendance-records')
+                ->name('absence.export');
+            Route::get('lateness', [HrReportController::class, 'latenessReport'])
+                ->middleware('permission:view-attendance-records')
+                ->name('lateness');
+            Route::get('lateness/export', [HrReportController::class, 'exportLatenessReport'])
+                ->middleware('permission:view-attendance-records')
+                ->name('lateness.export');
+            Route::get('leaves', [HrReportController::class, 'leaveReport'])
+                ->middleware('permission:view-leave-applications')
+                ->name('leaves');
+            Route::get('leaves/export', [HrReportController::class, 'exportLeaveReport'])
+                ->middleware('permission:view-leave-applications')
+                ->name('leaves.export');
+            Route::get('medical-excuses', [HrReportController::class, 'medicalExcuseReport'])
+                ->middleware('permission:view-leave-applications')
+                ->name('medical');
+            Route::get('medical-excuses/export', [HrReportController::class, 'exportMedicalExcuseReport'])
+                ->middleware('permission:view-leave-applications')
+                ->name('medical.export');
+            Route::get('warnings', [HrReportController::class, 'warningReport'])
+                ->middleware('permission:view-warnings')
+                ->name('warnings');
+            Route::get('warnings/export', [HrReportController::class, 'exportWarningReport'])
+                ->middleware('permission:view-warnings')
+                ->name('warnings.export');
+            Route::get('expired-contracts', [HrReportController::class, 'expiredContractsReport'])
+                ->middleware('permission:view-employee-contracts')
+                ->name('expired-contracts');
+            Route::get('expired-contracts/export', [HrReportController::class, 'exportExpiredContractsReport'])
+                ->middleware('permission:view-employee-contracts')
+                ->name('expired-contracts.export');
+            Route::get('training', [HrReportController::class, 'trainingReport'])
+                ->middleware('permission:view-employee-trainings')
+                ->name('training');
+            Route::get('training/export', [HrReportController::class, 'exportTrainingReport'])
+                ->middleware('permission:view-employee-trainings')
+                ->name('training.export');
+            Route::get('resignations', [HrReportController::class, 'resignationReport'])
+                ->middleware('permission:view-resignations')
+                ->name('resignations');
+            Route::get('resignations/export', [HrReportController::class, 'exportResignationReport'])
+                ->middleware('permission:view-resignations')
+                ->name('resignations.export');
+            Route::get('turnover', [HrReportController::class, 'turnoverReport'])
+                ->middleware('permission:view-turnover-report')
+                ->name('turnover');
+            Route::get('turnover/export', [HrReportController::class, 'exportTurnoverReport'])
+                ->middleware('permission:view-turnover-report')
+                ->name('turnover.export');
+        });
 
 
         // Plans management routes (admin only)
