@@ -3,8 +3,9 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
+import { cn } from '@/lib/utils';
 import { useState, useEffect } from 'react';
-import { Save } from 'lucide-react';
+import { RefreshCw, Save } from 'lucide-react';
 import { SettingsSection } from '@/components/settings-section';
 import { useTranslation } from 'react-i18next';
 import { router, usePage } from '@inertiajs/react';
@@ -28,6 +29,7 @@ export default function SystemSettings({
 }: SystemSettingsProps) {
   const { t } = useTranslation();
   const pageProps = usePage().props as any;
+  const auth = pageProps.auth || {};
 
   // Default settings
   const defaultSettings = {
@@ -56,6 +58,8 @@ export default function SystemSettings({
     emailVerification: settingsData.emailVerification === 'true' || settingsData.emailVerification === true || defaultSettings.emailVerification,
     landingPageEnabled: settingsData.landingPageEnabled === 'true' || settingsData.landingPageEnabled === true || settingsData.landingPageEnabled === '1' || (settingsData.landingPageEnabled === undefined ? defaultSettings.landingPageEnabled : false)
   }));
+  const [isDeploying, setIsDeploying] = useState(false);
+  const canDeploy = auth?.user?.type === 'superadmin' || auth?.permissions?.includes('manage-system-settings');
 
   // Update state when settings change
   useEffect(() => {
@@ -125,6 +129,34 @@ export default function SystemSettings({
     });
   };
 
+  const handleDeploy = () => {
+    if (isDeploying) {
+      return;
+    }
+
+    setIsDeploying(true);
+    router.post(route('deploy'), {}, {
+      preserveScroll: true,
+      onSuccess: (page: any) => {
+        const successMessage = page.props.flash?.success || t('Deployment started');
+        const errorMessage = page.props.flash?.error;
+
+        if (successMessage) {
+          toast.success(successMessage);
+        } else if (errorMessage) {
+          toast.error(errorMessage);
+        }
+      },
+      onError: (errors) => {
+        const errorMessage = errors.error || Object.values(errors).join(', ') || t('Failed to start deployment');
+        toast.error(errorMessage);
+      },
+      onFinish: () => {
+        setIsDeploying(false);
+      }
+    });
+  };
+
   // Filter timezones based on search
   const filteredTimezones = Object.entries(timezones).filter(([timezone, description]) =>
     timezone.toLowerCase().includes(timezoneSearch.toLowerCase()) ||
@@ -136,10 +168,24 @@ export default function SystemSettings({
       title={t("System Settings")}
       description={t("Configure system-wide settings for your application")}
       action={
-        <Button type="submit" form="system-settings-form" size="sm">
-          <Save className="h-4 w-4 mr-2" />
-          {t("Save Changes")}
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          {canDeploy && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleDeploy}
+              disabled={isDeploying}
+            >
+              <RefreshCw className={cn('h-4 w-4 mr-2', { 'animate-spin': isDeploying })} />
+              {isDeploying ? t('Deploying...') : t('Deploy System')}
+            </Button>
+          )}
+          <Button type="submit" form="system-settings-form" size="sm">
+            <Save className="h-4 w-4 mr-2" />
+            {t("Save Changes")}
+          </Button>
+        </div>
       }
     >
       <form id="system-settings-form" onSubmit={submitSystemSettings} className="space-y-6">

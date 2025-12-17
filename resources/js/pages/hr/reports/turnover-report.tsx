@@ -153,60 +153,75 @@ export default function TurnoverReport() {
 
         <Card>
           <CardContent className="space-y-4 pt-6">
-            <SearchAndFilterBar
-              searchTerm={searchTerm}
-              onSearchChange={setSearchTerm}
-              onSearch={handleSearch}
-              filters={[
-                {
-                  name: 'branch_id',
-                  label: t('Branch'),
-                  type: 'select' as const,
-                  value: branchId,
-                  onChange: setBranchId,
-                  options: branchOptions,
-                },
-                {
-                  name: 'department_id',
-                  label: t('Department'),
-                  type: 'select' as const,
-                  value: departmentId,
-                  onChange: setDepartmentId,
-                  options: departmentOptions,
-                },
-                {
-                  name: 'employee_id',
-                  label: t('Employee'),
-                  type: 'select' as const,
-                  value: employeeId,
-                  onChange: setEmployeeId,
-                  options: employeeOptions,
-                },
-                {
-                  name: 'date_from',
-                  label: t('From Date'),
-                  type: 'date' as const,
-                  value: dateFrom,
-                  onChange: setDateFrom,
-                },
-                {
-                  name: 'date_to',
-                  label: t('To Date'),
-                  type: 'date' as const,
-                  value: dateTo,
-                  onChange: setDateTo,
-                },
-              ]}
-              showFilters={showFilters}
-              setShowFilters={setShowFilters}
-              hasActiveFilters={hasActiveFilters}
-              activeFilterCount={activeFilterCount}
-            onApplyFilters={applyFilters}
-            onResetFilters={handleResetFilters}
-            perPageOptions={[10]}
-            currentPerPage={pageFilters.per_page?.toString() || '10'}
-            onPerPageChange={() => {}}
-          />
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div className="flex-1">
+                <SearchAndFilterBar
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                  onSearch={handleSearch}
+                  filters={[
+                    {
+                      name: 'branch_id',
+                      label: t('Branch'),
+                      type: 'select' as const,
+                      value: branchId,
+                      onChange: setBranchId,
+                      options: branchOptions,
+                    },
+                    {
+                      name: 'department_id',
+                      label: t('Department'),
+                      type: 'select' as const,
+                      value: departmentId,
+                      onChange: setDepartmentId,
+                      options: departmentOptions,
+                    },
+                    {
+                      name: 'employee_id',
+                      label: t('Employee'),
+                      type: 'select' as const,
+                      value: employeeId,
+                      onChange: setEmployeeId,
+                      options: employeeOptions,
+                    },
+                    {
+                      name: 'date_from',
+                      label: t('From Date'),
+                      type: 'date' as const,
+                      value: dateFrom,
+                      onChange: setDateFrom,
+                    },
+                    {
+                      name: 'date_to',
+                      label: t('To Date'),
+                      type: 'date' as const,
+                      value: dateTo,
+                      onChange: setDateTo,
+                    },
+                  ]}
+                  showFilters={showFilters}
+                  setShowFilters={setShowFilters}
+                  hasActiveFilters={hasActiveFilters}
+                  activeFilterCount={activeFilterCount}
+                  onApplyFilters={applyFilters}
+                  onResetFilters={handleResetFilters}
+                  perPageOptions={[10]}
+                  currentPerPage={pageFilters.per_page?.toString() || '10'}
+                  onPerPageChange={() => {}}
+                />
+              </div>
+              <ExportButton
+                exportRoute={route('hr.reports.turnover.export')}
+                filters={{
+                  search: searchTerm,
+                  branch_id: branchId,
+                  department_id: departmentId,
+                  employee_id: employeeId,
+                  date_from: serializeDate(dateFrom),
+                  date_to: serializeDate(dateTo),
+                }}
+              />
+            </div>
 
             <div className="rounded-lg border">
               <Table>

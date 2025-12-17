@@ -155,72 +155,88 @@ export default function ResignationReport() {
 
         <Card>
           <CardContent className="space-y-4 pt-6">
-            <SearchAndFilterBar
-              searchTerm={searchTerm}
-              onSearchChange={setSearchTerm}
-              onSearch={handleSearch}
-              filters={[
-                {
-                  name: 'branch_id',
-                  label: t('Branch'),
-                  type: 'select' as const,
-                  value: branchId,
-                  onChange: setBranchId,
-                  options: branchOptions,
-                },
-                {
-                  name: 'department_id',
-                  label: t('Department'),
-                  type: 'select' as const,
-                  value: departmentId,
-                  onChange: setDepartmentId,
-                  options: departmentOptions,
-                },
-                {
-                  name: 'employee_id',
-                  label: t('Employee'),
-                  type: 'select' as const,
-                  value: employeeId,
-                  onChange: setEmployeeId,
-                  options: employeeOptions,
-                },
-                {
-                  name: 'status',
-                  label: t('Status'),
-                  type: 'select' as const,
-                  value: status,
-                  onChange: setStatus,
-                  options: statusOptions,
-                },
-                {
-                  name: 'date_from',
-                  label: t('Submitted From'),
-                  type: 'date' as const,
-                  value: dateFrom,
-                  onChange: setDateFrom,
-                },
-                {
-                  name: 'date_to',
-                  label: t('Submitted To'),
-                  type: 'date' as const,
-                  value: dateTo,
-                  onChange: setDateTo,
-                },
-              ]}
-              showFilters={showFilters}
-              setShowFilters={setShowFilters}
-              hasActiveFilters={hasActiveFilters}
-              activeFilterCount={activeFilterCount}
-              onApplyFilters={applyFilters}
-              onResetFilters={handleResetFilters}
-              currentPerPage={pageFilters.per_page?.toString() || '10'}
-              onPerPageChange={(value) =>
-                router.get(route('hr.reports.resignations'), buildParams({ per_page: value }), {
-                  preserveState: true,
-                  preserveScroll: true,
-                })
-              }
-            />
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div className="flex-1">
+                <SearchAndFilterBar
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                  onSearch={handleSearch}
+                  filters={[
+                    {
+                      name: 'branch_id',
+                      label: t('Branch'),
+                      type: 'select' as const,
+                      value: branchId,
+                      onChange: setBranchId,
+                      options: branchOptions,
+                    },
+                    {
+                      name: 'department_id',
+                      label: t('Department'),
+                      type: 'select' as const,
+                      value: departmentId,
+                      onChange: setDepartmentId,
+                      options: departmentOptions,
+                    },
+                    {
+                      name: 'employee_id',
+                      label: t('Employee'),
+                      type: 'select' as const,
+                      value: employeeId,
+                      onChange: setEmployeeId,
+                      options: employeeOptions,
+                    },
+                    {
+                      name: 'status',
+                      label: t('Status'),
+                      type: 'select' as const,
+                      value: status,
+                      onChange: setStatus,
+                      options: statusOptions,
+                    },
+                    {
+                      name: 'date_from',
+                      label: t('Submitted From'),
+                      type: 'date' as const,
+                      value: dateFrom,
+                      onChange: setDateFrom,
+                    },
+                    {
+                      name: 'date_to',
+                      label: t('Submitted To'),
+                      type: 'date' as const,
+                      value: dateTo,
+                      onChange: setDateTo,
+                    },
+                  ]}
+                  showFilters={showFilters}
+                  setShowFilters={setShowFilters}
+                  hasActiveFilters={hasActiveFilters}
+                  activeFilterCount={activeFilterCount}
+                  onApplyFilters={applyFilters}
+                  onResetFilters={handleResetFilters}
+                  currentPerPage={pageFilters.per_page?.toString() || '10'}
+                  onPerPageChange={(value) =>
+                    router.get(route('hr.reports.resignations'), buildParams({ per_page: value }), {
+                      preserveState: true,
+                      preserveScroll: true,
+                    })
+                  }
+                />
+              </div>
+              <ExportButton
+                exportRoute={route('hr.reports.resignations.export')}
+                filters={{
+                  search: searchTerm,
+                  branch_id: branchId,
+                  department_id: departmentId,
+                  employee_id: employeeId,
+                  status,
+                  date_from: serializeDate(dateFrom),
+                  date_to: serializeDate(dateTo),
+                }}
+              />
+            </div>
 
             <div className="rounded-lg border">
               <Table>

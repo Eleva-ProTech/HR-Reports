@@ -39,8 +39,7 @@ class HrReportController extends Controller
             ])
             ->whereIn('created_by', getCompanyAndUsersId())
             ->where(function (Builder $builder) {
-                $builder->where('is_absent', true)
-                    ->orWhere('status', 'absent');
+                $builder->orWhere('status', 'on_leave');
             });
 
         $this->applyEmployeeFilters($query, $request);
@@ -493,6 +492,73 @@ class HrReportController extends Controller
                 'total_resignations' => $totalResignations,
                 'pending' => $pendingResignations,
                 'approved' => $approvedResignations,
+                'average_notice_period' => round($averageNoticePeriod ?? 0, 1),
+            ],
+        ]);
+    }
+
+    public function terminationReport(Request $request): Response
+    {
+        $perPage = $this->perPage($request);
+
+        $query = Termination::with([
+                'employee',
+                'employee.employee',
+                'employee.employee.branch',
+                'employee.employee.department',
+                'approver',
+            ])
+            ->whereIn('created_by', getCompanyAndUsersId());
+
+        $this->applyEmployeeFilters($query, $request);
+        $this->applySearchFilter($query, $request, ['termination_type', 'reason', 'description']);
+        $this->applyDateFilter($query, $request, 'termination_date');
+
+        if ($request->filled('status') && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('termination_type') && $request->termination_type !== 'all') {
+            $query->where('termination_type', $request->termination_type);
+        }
+
+        $records = (clone $query)->orderBy('termination_date', 'desc')->paginate($perPage)->withQueryString();
+
+        $totalTerminations = (clone $query)->count();
+        $pendingTerminations = (clone $query)->where('status', 'pending')->count();
+        $approvedTerminations = (clone $query)->where('status', 'approved')->count();
+        $averageNoticePeriod = (clone $query)->avg('notice_period');
+
+        $terminationTypes = Termination::whereIn('created_by', getCompanyAndUsersId())
+            ->select('termination_type')
+            ->distinct()
+            ->pluck('termination_type')
+            ->filter()
+            ->values();
+
+        return Inertia::render('hr/reports/termination-report', [
+            'records' => $records,
+            'filters' => $request->only([
+                'search',
+                'branch_id',
+                'department_id',
+                'employee_id',
+                'status',
+                'termination_type',
+                'date_from',
+                'date_to',
+                'per_page',
+            ]),
+            'options' => array_merge(
+                $this->getFilterOptions(),
+                [
+                    'termination_types' => $terminationTypes,
+                ]
+            ),
+            'stats' => [
+                'total_terminations' => $totalTerminations,
+                'pending' => $pendingTerminations,
+                'approved' => $approvedTerminations,
                 'average_notice_period' => round($averageNoticePeriod ?? 0, 1),
             ],
         ]);
@@ -1225,6 +1291,62 @@ class HrReportController extends Controller
                 $profile?->department?->name ?? 'Not Assigned',
                 $record->resignation_date ? Carbon::parse($record->resignation_date)->format('Y-m-d') : '-',
                 $record->last_working_day ? Carbon::parse($record->last_working_day)->format('Y-m-d') : '-',
+                $record->notice_period ?? '0',
+                $record->reason ?? '',
+                ucfirst($record->status ?? 'pending'),
+                $record->approver?->name ?? '-',
+            ];
+        });
+    }
+
+    public function exportTerminationReport(Request $request): StreamedResponse
+    {
+        $query = Termination::with([
+                'employee',
+                'employee.employee',
+                'employee.employee.branch',
+                'employee.employee.department',
+                'approver',
+            ])
+            ->whereIn('created_by', getCompanyAndUsersId());
+
+        $this->applyEmployeeFilters($query, $request);
+        $this->applySearchFilter($query, $request, ['termination_type', 'reason', 'description']);
+        $this->applyDateFilter($query, $request, 'termination_date');
+
+        if ($request->filled('status') && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('termination_type') && $request->termination_type !== 'all') {
+            $query->where('termination_type', $request->termination_type);
+        }
+
+        $records = $query->orderBy('termination_date', 'desc')->get();
+
+        return $this->generateExcelResponse($records, 'termination-report', [
+            'Employee Name',
+            'Employee Email',
+            'Branch',
+            'Department',
+            'Termination Type',
+            'Termination Date',
+            'Notice Date',
+            'Notice Period (Days)',
+            'Reason',
+            'Status',
+            'Approved By',
+        ], function ($record) {
+            $employee = $record->employee;
+            $profile = $employee?->employee;
+            return [
+                $employee?->name ?? '',
+                $employee?->email ?? '',
+                $profile?->branch?->name ?? 'Not Assigned',
+                $profile?->department?->name ?? 'Not Assigned',
+                $record->termination_type ?? '-',
+                $record->termination_date ? Carbon::parse($record->termination_date)->format('Y-m-d') : '-',
+                $record->notice_date ? Carbon::parse($record->notice_date)->format('Y-m-d') : '-',
                 $record->notice_period ?? '0',
                 $record->reason ?? '',
                 ucfirst($record->status ?? 'pending'),

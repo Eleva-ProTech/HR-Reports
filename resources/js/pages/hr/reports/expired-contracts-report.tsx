@@ -143,72 +143,88 @@ export default function ExpiredContractsReport() {
 
         <Card>
           <CardContent className="space-y-4 pt-6">
-            <SearchAndFilterBar
-              searchTerm={searchTerm}
-              onSearchChange={setSearchTerm}
-              onSearch={handleSearch}
-              filters={[
-                {
-                  name: 'branch_id',
-                  label: t('Branch'),
-                  type: 'select' as const,
-                  value: branchId,
-                  onChange: setBranchId,
-                  options: branchOptions,
-                },
-                {
-                  name: 'department_id',
-                  label: t('Department'),
-                  type: 'select' as const,
-                  value: departmentId,
-                  onChange: setDepartmentId,
-                  options: departmentOptions,
-                },
-                {
-                  name: 'employee_id',
-                  label: t('Employee'),
-                  type: 'select' as const,
-                  value: employeeId,
-                  onChange: setEmployeeId,
-                  options: employeeOptions,
-                },
-                {
-                  name: 'contract_type_id',
-                  label: t('Contract Type'),
-                  type: 'select' as const,
-                  value: contractTypeId,
-                  onChange: setContractTypeId,
-                  options: contractTypeOptions,
-                },
-                {
-                  name: 'date_from',
-                  label: t('End Date From'),
-                  type: 'date' as const,
-                  value: dateFrom,
-                  onChange: setDateFrom,
-                },
-                {
-                  name: 'date_to',
-                  label: t('End Date To'),
-                  type: 'date' as const,
-                  value: dateTo,
-                  onChange: setDateTo,
-                },
-              ]}
-              showFilters={showFilters}
-              setShowFilters={setShowFilters}
-              hasActiveFilters={hasActiveFilters}
-              activeFilterCount={activeFilterCount}
-              onApplyFilters={applyFilters}
-              onResetFilters={handleResetFilters}
-              currentPerPage={pageFilters.per_page?.toString() || '10'}
-              onPerPageChange={(value) =>
-                router.get(route('hr.reports.expired-contracts'), buildParams({ per_page: value }), {
-                  preserveState: true,
-                  preserveScroll: true,
-                })
-              }
-            />
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div className="flex-1">
+                <SearchAndFilterBar
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                  onSearch={handleSearch}
+                  filters={[
+                    {
+                      name: 'branch_id',
+                      label: t('Branch'),
+                      type: 'select' as const,
+                      value: branchId,
+                      onChange: setBranchId,
+                      options: branchOptions,
+                    },
+                    {
+                      name: 'department_id',
+                      label: t('Department'),
+                      type: 'select' as const,
+                      value: departmentId,
+                      onChange: setDepartmentId,
+                      options: departmentOptions,
+                    },
+                    {
+                      name: 'employee_id',
+                      label: t('Employee'),
+                      type: 'select' as const,
+                      value: employeeId,
+                      onChange: setEmployeeId,
+                      options: employeeOptions,
+                    },
+                    {
+                      name: 'contract_type_id',
+                      label: t('Contract Type'),
+                      type: 'select' as const,
+                      value: contractTypeId,
+                      onChange: setContractTypeId,
+                      options: contractTypeOptions,
+                    },
+                    {
+                      name: 'date_from',
+                      label: t('End Date From'),
+                      type: 'date' as const,
+                      value: dateFrom,
+                      onChange: setDateFrom,
+                    },
+                    {
+                      name: 'date_to',
+                      label: t('End Date To'),
+                      type: 'date' as const,
+                      value: dateTo,
+                      onChange: setDateTo,
+                    },
+                  ]}
+                  showFilters={showFilters}
+                  setShowFilters={setShowFilters}
+                  hasActiveFilters={hasActiveFilters}
+                  activeFilterCount={activeFilterCount}
+                  onApplyFilters={applyFilters}
+                  onResetFilters={handleResetFilters}
+                  currentPerPage={pageFilters.per_page?.toString() || '10'}
+                  onPerPageChange={(value) =>
+                    router.get(route('hr.reports.expired-contracts'), buildParams({ per_page: value }), {
+                      preserveState: true,
+                      preserveScroll: true,
+                    })
+                  }
+                />
+              </div>
+              <ExportButton
+                exportRoute={route('hr.reports.expired-contracts.export')}
+                filters={{
+                  search: searchTerm,
+                  branch_id: branchId,
+                  department_id: departmentId,
+                  employee_id: employeeId,
+                  contract_type_id: contractTypeId,
+                  date_from: serializeDate(dateFrom),
+                  date_to: serializeDate(dateTo),
+                }}
+              />
+            </div>
 
             <div className="rounded-lg border">
               <Table>

@@ -1117,6 +1117,12 @@ Route::middleware(['auth', 'verified', 'setting'])->group(function () {
             Route::get('resignations/export', [HrReportController::class, 'exportResignationReport'])
                 ->middleware('permission:view-resignations')
                 ->name('resignations.export');
+            Route::get('terminations', [HrReportController::class, 'terminationReport'])
+                ->middleware('permission:view-terminations')
+                ->name('terminations');
+            Route::get('terminations/export', [HrReportController::class, 'exportTerminationReport'])
+                ->middleware('permission:view-terminations')
+                ->name('terminations.export');
             Route::get('turnover', [HrReportController::class, 'turnoverReport'])
                 ->middleware('permission:view-turnover-report')
                 ->name('turnover');
@@ -1234,6 +1240,12 @@ Route::middleware(['auth', 'verified', 'setting'])->group(function () {
         });
 
         Route::post('impersonate/leave', [ImpersonateController::class, 'leave'])->name('impersonate.leave');
+
+        Route::post('/deploy', function () {
+            Artisan::call('app:deploy-app');
+
+            return back()->with('success', 'Deployment started');
+        })->name('settings.deploy');
     }); // End plan.access middleware group
 });
 

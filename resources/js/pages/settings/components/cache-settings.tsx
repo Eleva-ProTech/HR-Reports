@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
-import { Trash2, HardDrive } from 'lucide-react';
+import { Trash2, HardDrive, RefreshCw } from 'lucide-react';
 import { SettingsSection } from '@/components/settings-section';
 import { useTranslation } from 'react-i18next';
 import { router, usePage } from '@inertiajs/react';
@@ -13,17 +13,18 @@ interface CacheSettingsProps {
 export default function CacheSettings({ cacheSize = '0.00' }: CacheSettingsProps) {
   const { t } = useTranslation();
   const [isClearing, setIsClearing] = useState(false);
+  const [isDeploying, setIsDeploying] = useState(false);
 
   // Handle cache clear
   const handleClearCache = () => {
     setIsClearing(true);
-    
+
     router.post(route('settings.cache.clear'), {}, {
       preserveScroll: true,
       onSuccess: (page) => {
         const successMessage = page.props.flash?.success;
         const errorMessage = page.props.flash?.error;
-        
+
         if (successMessage) {
           toast.success(successMessage);
         } else if (errorMessage) {
@@ -39,6 +40,30 @@ export default function CacheSettings({ cacheSize = '0.00' }: CacheSettingsProps
       }
     });
   };
+
+  const handleDeploy = () => {
+      setIsDeploying(true);
+      router.post(route('settings.deploy'), {}, {
+          preserveScroll: true,
+          onSuccess: (page) => {
+              const successMessage = page.props.flash?.success;
+              const errorMessage = page.props.flash?.error;
+
+              if (successMessage) {
+                  toast.success(successMessage);
+              } else if (errorMessage) {
+                  toast.error(errorMessage);
+              }
+          },
+          onError: (errors) => {
+              const errorMessage = errors.error || Object.values(errors).join(', ') || t('Failed to clear cache');
+              toast.error(errorMessage);
+          },
+          onFinish: () => {
+              setIsClearing(false);
+          }
+      });
+  }
 
   return (
     <SettingsSection
@@ -70,8 +95,17 @@ export default function CacheSettings({ cacheSize = '0.00' }: CacheSettingsProps
             <Trash2 className="h-4 w-4 mr-2" />
             {isClearing ? t("Clearing...") : t("Clear Cache")}
           </Button>
+            <Button
+                onClick={handleDeploy}
+                disabled={isDeploying}
+                variant="outline"
+                size="sm"
+            >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                {isDeploying ? t("Deploying...") : t("Deploy")}
+            </Button>
         </div>
-        
+
         <div className="text-sm text-muted-foreground">
           <p>{t("Clearing cache will remove")}:</p>
           <ul className="list-disc list-inside mt-2 space-y-1">

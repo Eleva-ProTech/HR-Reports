@@ -960,6 +960,13 @@ export function AppSidebar() {
             });
         }
 
+        if (hasPermission(permissions,'view-terminations')) {
+            reportsChildren.push({
+                title: t('Termination Report'),
+                href: route('hr.reports.terminations')
+            })
+        }
+
         if (reportsChildren.length > 0) {
             items.push({
                 title: t('Reports'),

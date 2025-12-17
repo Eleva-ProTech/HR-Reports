@@ -78,7 +78,7 @@ class LeaveApplicationController extends Controller
         $validated = $request->validate([
             'employee_id' => 'required|exists:users,id',
             'leave_type_id' => 'required|exists:leave_types,id',
-            'start_date' => 'required|date|after_or_equal:today',
+            'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
             'reason' => 'required|string',
             'attachment' => 'nullable|string',
@@ -104,9 +104,9 @@ class LeaveApplicationController extends Controller
         $validated['leave_policy_id'] = $leavePolicy->id;
 
         // Validate days per application
-        if ($validated['total_days'] < $leavePolicy->min_days_per_application || 
+        if ($validated['total_days'] < $leavePolicy->min_days_per_application ||
             $validated['total_days'] > $leavePolicy->max_days_per_application) {
-            return redirect()->back()->with('error', 
+            return redirect()->back()->with('error',
                 __('Leave days must be between :min and :max days.', [
                     'min' => $leavePolicy->min_days_per_application,
                     'max' => $leavePolicy->max_days_per_application
@@ -137,7 +137,7 @@ class LeaveApplicationController extends Controller
 
         // Check if enough balance available
         if ($leaveBalance->remaining_days < $validated['total_days']) {
-            return redirect()->back()->with('error', 
+            return redirect()->back()->with('error',
                 __('Insufficient leave balance. Available: :available days, Requested: :requested days', [
                     'available' => $leaveBalance->remaining_days,
                     'requested' => $validated['total_days']
@@ -261,7 +261,7 @@ class LeaveApplicationController extends Controller
                         ->first();
 
                     if ($leaveBalance && $leaveBalance->remaining_days < $leaveApplication->total_days) {
-                        return redirect()->back()->with('error', 
+                        return redirect()->back()->with('error',
                             __('Cannot approve: Insufficient leave balance. Available: :available days, Required: :required days', [
                                 'available' => $leaveBalance->remaining_days,
                                 'required' => $leaveApplication->total_days

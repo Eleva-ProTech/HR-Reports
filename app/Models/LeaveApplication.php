@@ -79,19 +79,19 @@ class LeaveApplication extends BaseModel
         if ($this->status === 'approved') {
             $startDate = $this->start_date;
             $endDate = $this->end_date;
-            
+
             // Loop through each day of leave
             for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {
                 // Skip weekends (optional - depends on company policy)
                 if ($date->isWeekend()) {
                     continue;
                 }
-                
+
                 // Check if attendance record already exists
                 $existingRecord = \App\Models\AttendanceRecord::where('employee_id', $this->employee_id)
                     ->where('date', $date->format('Y-m-d'))
                     ->first();
-                
+
                 if (!$existingRecord) {
                     \App\Models\AttendanceRecord::create([
                         'employee_id' => $this->employee_id,
@@ -110,19 +110,19 @@ class LeaveApplication extends BaseModel
                     ]);
                 }
             }
-            
+
             // Update leave balance - deduct used days
             $this->updateLeaveBalance();
         }
     }
-    
+
     /**
      * Update employee leave balance when leave is approved.
      */
     public function updateLeaveBalance()
     {
         $currentYear = now()->year;
-        
+
         // Find or create leave balance for this employee, leave type, and year
         $leaveBalance = \App\Models\LeaveBalance::firstOrCreate(
             [
@@ -138,7 +138,7 @@ class LeaveApplication extends BaseModel
                 'created_by' => $this->created_by,
             ]
         );
-        
+
         // Deduct the leave days
         $leaveBalance->used_days += $this->total_days;
         $leaveBalance->remaining_days = $leaveBalance->allocated_days - $leaveBalance->used_days;
