@@ -35,6 +35,9 @@ interface CompanyDashboardData {
     totalLeaveRequests: number;
     approvedLeaveRequests: number;
     totalLeaveDays: number;
+    // HR Report Stats - Sick Leave
+    sickLeaveRequests: number;
+    currentMonthSickLeaves: number;
     // HR Report Stats - Warnings
     totalWarnings: number;
     openWarnings: number;
@@ -312,7 +315,7 @@ export default function Dashboard({ dashboardData }: { dashboardData: CompanyDas
           </div>
 
           {/* Leave Stats */}
-          <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
@@ -342,6 +345,21 @@ export default function Dashboard({ dashboardData }: { dashboardData: CompanyDas
                 </div>
               </CardContent>
             </Card>
+
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">{t('Sick Leave Requests')}</p>
+                      <p className="mt-2 text-2xl font-bold">{stats.sickLeaveRequests || 0}</p>
+                      <p className="text-xs text-green-600 mt-1">{stats.currentMonthSickLeaves || 0} {t('this month')}</p>
+                    </div>
+                    <div className="rounded-full bg-teal-100 p-3 dark:bg-teal-900">
+                      <Calendar className="h-5 w-5 text-teal-600 dark:text-teal-400" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
             <Card>
               <CardContent className="p-6">

@@ -233,6 +233,38 @@ class LeaveApplicationController extends Controller
 
         if ($leaveApplication) {
             try {
+                // If approved, restore leave balance and remove generated attendance records
+                if ($leaveApplication->status === 'approved') {
+                    $currentYear = now()->year;
+
+                    $leaveBalance = \App\Models\LeaveBalance::where('employee_id', $leaveApplication->employee_id)
+                        ->where('leave_type_id', $leaveApplication->leave_type_id)
+                        ->where('year', $currentYear)
+                        ->first();
+
+                    if ($leaveBalance) {
+                        $leaveBalance->used_days = max(0, ($leaveBalance->used_days ?? 0) - ($leaveApplication->total_days ?? 0));
+                        $leaveBalance->remaining_days = ($leaveBalance->allocated_days ?? 0) - ($leaveBalance->used_days ?? 0);
+                        $leaveBalance->save();
+                    }
+
+                    // Remove attendance records created for this leave period
+                    $leaveApplication->loadMissing('leaveType');
+                    $leaveTypeName = $leaveApplication->leaveType?->name;
+
+                    \App\Models\AttendanceRecord::where('employee_id', $leaveApplication->employee_id)
+                        ->whereBetween('date', [
+                            \Carbon\Carbon::parse($leaveApplication->start_date)->format('Y-m-d'),
+                            \Carbon\Carbon::parse($leaveApplication->end_date)->format('Y-m-d'),
+                        ])
+                        ->where('status', 'on_leave')
+                        ->when($leaveTypeName, function ($q) use ($leaveTypeName) {
+                            // Match records created by this leave (notes contain the leave type name)
+                            $q->where('notes', 'like', 'Leave: ' . $leaveTypeName . '%');
+                        })
+                        ->delete();
+                }
+
                 $leaveApplication->delete();
                 return redirect()->back()->with('success', __('Leave application deleted successfully'));
             } catch (\Exception $e) {

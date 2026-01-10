@@ -204,6 +204,27 @@ class DashboardController extends Controller
         $totalLeaveDays = \App\Models\LeaveApplication::whereIn('created_by', $companyUserIds)
             ->sum('total_days');
 
+        // HR Report Stats - Sick Leave
+        $sickLeaveTypeIds = \App\Models\LeaveType::whereIn('created_by', $companyUserIds)
+            ->whereRaw('LOWER(name) LIKE ?', ['%sick%'])
+            ->pluck('id');
+
+        $sickLeaveRequests = \App\Models\LeaveApplication::whereIn('created_by', $companyUserIds)
+            ->whereIn('leave_type_id', $sickLeaveTypeIds)
+            ->where('status', 'approved')
+            ->count();
+
+        $currentMonthSickLeaves = \App\Models\LeaveApplication::whereIn('created_by', $companyUserIds)
+            ->whereIn('leave_type_id', $sickLeaveTypeIds)
+            ->where('status', 'approved')
+            ->where(function ($q) {
+                $startOfMonth = now()->startOfMonth();
+                $endOfMonth = now()->endOfMonth();
+                $q->whereBetween('start_date', [$startOfMonth, $endOfMonth])
+                    ->orWhereBetween('end_date', [$startOfMonth, $endOfMonth]);
+            })
+            ->count();
+
         // HR Report Stats - Warning Report
         $totalWarnings = \App\Models\Warning::whereIn('created_by', $companyUserIds)->count();
         $openWarnings = \App\Models\Warning::whereIn('created_by', $companyUserIds)
@@ -402,6 +423,9 @@ class DashboardController extends Controller
                 'totalLeaveRequests' => $totalLeaveRequests,
                 'approvedLeaveRequests' => $approvedLeaveRequests,
                 'totalLeaveDays' => $totalLeaveDays,
+                // HR Report Stats - Sick Leave
+                'sickLeaveRequests' => $sickLeaveRequests,
+                'currentMonthSickLeaves' => $currentMonthSickLeaves,
                 // HR Report Stats - Warnings
                 'totalWarnings' => $totalWarnings,
                 'openWarnings' => $openWarnings,
