@@ -31,12 +31,12 @@ class HrReportController extends Controller
         $perPage = $this->perPage($request);
 
         $query = AttendanceRecord::with([
-                'employee',
-                'employee.employee',
-                'employee.employee.branch',
-                'employee.employee.department',
-                'shift',
-            ])
+            'employee',
+            'employee.employee',
+            'employee.employee.branch',
+            'employee.employee.department',
+            'shift',
+        ])
             ->whereIn('created_by', getCompanyAndUsersId())
             ->where(function (Builder $builder) {
                 $builder->orWhere('status', 'on_leave');
@@ -80,12 +80,12 @@ class HrReportController extends Controller
         $perPage = $this->perPage($request);
 
         $query = AttendanceRecord::with([
-                'employee',
-                'employee.employee',
-                'employee.employee.branch',
-                'employee.employee.department',
-                'shift',
-            ])
+            'employee',
+            'employee.employee',
+            'employee.employee.branch',
+            'employee.employee.department',
+            'shift',
+        ])
             ->whereIn('created_by', getCompanyAndUsersId())
             ->where('is_late', true);
 
@@ -127,12 +127,12 @@ class HrReportController extends Controller
         $perPage = $this->perPage($request);
 
         $query = LeaveApplication::with([
-                'employee',
-                'employee.employee',
-                'employee.employee.branch',
-                'employee.employee.department',
-                'leaveType',
-            ])
+            'employee',
+            'employee.employee',
+            'employee.employee.branch',
+            'employee.employee.department',
+            'leaveType',
+        ])
             ->whereIn('created_by', getCompanyAndUsersId());
 
         $this->applyEmployeeFilters($query, $request);
@@ -190,12 +190,12 @@ class HrReportController extends Controller
         $perPage = $this->perPage($request);
 
         $query = LeaveApplication::with([
-                'employee',
-                'employee.employee',
-                'employee.employee.branch',
-                'employee.employee.department',
-                'leaveType',
-            ])
+            'employee',
+            'employee.employee',
+            'employee.employee.branch',
+            'employee.employee.department',
+            'leaveType',
+        ])
             ->whereIn('created_by', getCompanyAndUsersId())
             ->where(function (Builder $builder) {
                 $builder->whereHas('leaveType', function (Builder $typeQuery) {
@@ -203,8 +203,8 @@ class HrReportController extends Controller
                         ->orWhere('name', 'like', '%sick%')
                         ->orWhere('name', 'like', '%health%');
                 })
-                ->orWhere('reason', 'like', '%medical%')
-                ->orWhere('reason', 'like', '%doctor%');
+                    ->orWhere('reason', 'like', '%medical%')
+                    ->orWhere('reason', 'like', '%doctor%');
             });
 
         $this->applyEmployeeFilters($query, $request);
@@ -247,12 +247,12 @@ class HrReportController extends Controller
         $perPage = $this->perPage($request);
 
         $query = Warning::with([
-                'employee',
-                'employee.employee',
-                'employee.employee.branch',
-                'employee.employee.department',
-                'issuer',
-            ])
+            'employee',
+            'employee.employee',
+            'employee.employee.branch',
+            'employee.employee.department',
+            'issuer',
+        ])
             ->whereIn('created_by', getCompanyAndUsersId());
 
         $this->applyEmployeeFilters($query, $request);
@@ -316,12 +316,12 @@ class HrReportController extends Controller
         $today = Carbon::today();
 
         $query = EmployeeContract::with([
-                'employee',
-                'employee.employee',
-                'employee.employee.branch',
-                'employee.employee.department',
-                'contractType',
-            ])
+            'employee',
+            'employee.employee',
+            'employee.employee.branch',
+            'employee.employee.department',
+            'contractType',
+        ])
             ->whereIn('created_by', getCompanyAndUsersId())
             ->where(function (Builder $builder) use ($today) {
                 $builder->where('status', 'expired')
@@ -389,12 +389,12 @@ class HrReportController extends Controller
         $perPage = $this->perPage($request);
 
         $query = EmployeeTraining::with([
-                'employee',
-                'employee.employee',
-                'employee.employee.branch',
-                'employee.employee.department',
-                'trainingProgram',
-            ])
+            'employee',
+            'employee.employee',
+            'employee.employee.branch',
+            'employee.employee.department',
+            'trainingProgram',
+        ])
             ->whereIn('created_by', getCompanyAndUsersId());
 
         $this->applyEmployeeFilters($query, $request);
@@ -452,12 +452,12 @@ class HrReportController extends Controller
         $perPage = $this->perPage($request);
 
         $query = Resignation::with([
-                'employee',
-                'employee.employee',
-                'employee.employee.branch',
-                'employee.employee.department',
-                'approver',
-            ])
+            'employee',
+            'employee.employee',
+            'employee.employee.branch',
+            'employee.employee.department',
+            'approver',
+        ])
             ->whereIn('created_by', getCompanyAndUsersId());
 
         $this->applyEmployeeFilters($query, $request);
@@ -502,12 +502,12 @@ class HrReportController extends Controller
         $perPage = $this->perPage($request);
 
         $query = Termination::with([
-                'employee',
-                'employee.employee',
-                'employee.employee.branch',
-                'employee.employee.department',
-                'approver',
-            ])
+            'employee',
+            'employee.employee',
+            'employee.employee.branch',
+            'employee.employee.department',
+            'approver',
+        ])
             ->whereIn('created_by', getCompanyAndUsersId());
 
         $this->applyEmployeeFilters($query, $request);
@@ -844,19 +844,19 @@ class HrReportController extends Controller
         int $headcount
     ): array {
         $hireBuckets = $hires
-            ->filter(fn (Employee $employee) => $employee->date_of_joining)
-            ->groupBy(fn (Employee $employee) => Carbon::parse($employee->date_of_joining)->format('Y-m'))
-            ->map(fn ($group) => $group->count());
+            ->filter(fn(Employee $employee) => $employee->date_of_joining)
+            ->groupBy(fn(Employee $employee) => Carbon::parse($employee->date_of_joining)->format('Y-m'))
+            ->map(fn($group) => $group->count());
 
         $resignationBuckets = $resignations
-            ->filter(fn ($resignation) => $resignation->last_working_day)
-            ->groupBy(fn ($resignation) => Carbon::parse($resignation->last_working_day)->format('Y-m'))
-            ->map(fn ($group) => $group->count());
+            ->filter(fn($resignation) => $resignation->last_working_day)
+            ->groupBy(fn($resignation) => Carbon::parse($resignation->last_working_day)->format('Y-m'))
+            ->map(fn($group) => $group->count());
 
         $terminationBuckets = $terminations
-            ->filter(fn ($termination) => $termination->termination_date)
-            ->groupBy(fn ($termination) => Carbon::parse($termination->termination_date)->format('Y-m'))
-            ->map(fn ($group) => $group->count());
+            ->filter(fn($termination) => $termination->termination_date)
+            ->groupBy(fn($termination) => Carbon::parse($termination->termination_date)->format('Y-m'))
+            ->map(fn($group) => $group->count());
 
         $series = [];
         $cursor = $startDate->copy()->startOfMonth();
@@ -881,12 +881,12 @@ class HrReportController extends Controller
     public function exportAbsenceReport(Request $request): StreamedResponse
     {
         $query = AttendanceRecord::with([
-                'employee',
-                'employee.employee',
-                'employee.employee.branch',
-                'employee.employee.department',
-                'shift',
-            ])
+            'employee',
+            'employee.employee',
+            'employee.employee.branch',
+            'employee.employee.department',
+            'shift',
+        ])
             ->whereIn('created_by', getCompanyAndUsersId())
             ->where(function (Builder $builder) {
                 $builder->where('is_absent', true)
@@ -927,12 +927,12 @@ class HrReportController extends Controller
     public function exportLatenessReport(Request $request): StreamedResponse
     {
         $query = AttendanceRecord::with([
-                'employee',
-                'employee.employee',
-                'employee.employee.branch',
-                'employee.employee.department',
-                'shift',
-            ])
+            'employee',
+            'employee.employee',
+            'employee.employee.branch',
+            'employee.employee.department',
+            'shift',
+        ])
             ->whereIn('created_by', getCompanyAndUsersId())
             ->where('is_late', true);
 
@@ -974,12 +974,12 @@ class HrReportController extends Controller
     public function exportLeaveReport(Request $request): StreamedResponse
     {
         $query = LeaveApplication::with([
-                'employee',
-                'employee.employee',
-                'employee.employee.branch',
-                'employee.employee.department',
-                'leaveType',
-            ])
+            'employee',
+            'employee.employee',
+            'employee.employee.branch',
+            'employee.employee.department',
+            'leaveType',
+        ])
             ->whereIn('created_by', getCompanyAndUsersId());
 
         $this->applyEmployeeFilters($query, $request);
@@ -1007,6 +1007,10 @@ class HrReportController extends Controller
             'Total Days',
             'Status',
             'Reason',
+            'Supervisor',
+            'Shift',
+            'Day Off',
+            'Comment',
         ], function ($record) {
             $employee = $record->employee;
             $profile = $employee?->employee;
@@ -1021,6 +1025,10 @@ class HrReportController extends Controller
                 $record->total_days ?? '0',
                 ucfirst($record->status ?? 'pending'),
                 $record->reason ?? '',
+                $record->supervisor ?? '',
+                $record->shift ?? '',
+                $record->dayoff ?? '',
+                $record->comment ?? '',
             ];
         });
     }
@@ -1028,12 +1036,12 @@ class HrReportController extends Controller
     public function exportMedicalExcuseReport(Request $request): StreamedResponse
     {
         $query = LeaveApplication::with([
-                'employee',
-                'employee.employee',
-                'employee.employee.branch',
-                'employee.employee.department',
-                'leaveType',
-            ])
+            'employee',
+            'employee.employee',
+            'employee.employee.branch',
+            'employee.employee.department',
+            'leaveType',
+        ])
             ->whereIn('created_by', getCompanyAndUsersId())
             ->where(function (Builder $builder) {
                 $builder->whereHas('leaveType', function (Builder $typeQuery) {
@@ -1041,8 +1049,8 @@ class HrReportController extends Controller
                         ->orWhere('name', 'like', '%sick%')
                         ->orWhere('name', 'like', '%health%');
                 })
-                ->orWhere('reason', 'like', '%medical%')
-                ->orWhere('reason', 'like', '%doctor%');
+                    ->orWhere('reason', 'like', '%medical%')
+                    ->orWhere('reason', 'like', '%doctor%');
             });
 
         $this->applyEmployeeFilters($query, $request);
@@ -1087,12 +1095,12 @@ class HrReportController extends Controller
     public function exportWarningReport(Request $request): StreamedResponse
     {
         $query = Warning::with([
-                'employee',
-                'employee.employee',
-                'employee.employee.branch',
-                'employee.employee.department',
-                'issuer',
-            ])
+            'employee',
+            'employee.employee',
+            'employee.employee.branch',
+            'employee.employee.department',
+            'issuer',
+        ])
             ->whereIn('created_by', getCompanyAndUsersId());
 
         $this->applyEmployeeFilters($query, $request);
@@ -1143,12 +1151,12 @@ class HrReportController extends Controller
         $today = Carbon::today();
 
         $query = EmployeeContract::with([
-                'employee',
-                'employee.employee',
-                'employee.employee.branch',
-                'employee.employee.department',
-                'contractType',
-            ])
+            'employee',
+            'employee.employee',
+            'employee.employee.branch',
+            'employee.employee.department',
+            'contractType',
+        ])
             ->whereIn('created_by', getCompanyAndUsersId())
             ->where(function (Builder $builder) use ($today) {
                 $builder->where('status', 'expired')
@@ -1198,12 +1206,12 @@ class HrReportController extends Controller
     public function exportTrainingReport(Request $request): StreamedResponse
     {
         $query = EmployeeTraining::with([
-                'employee',
-                'employee.employee',
-                'employee.employee.branch',
-                'employee.employee.department',
-                'trainingProgram',
-            ])
+            'employee',
+            'employee.employee',
+            'employee.employee.branch',
+            'employee.employee.department',
+            'trainingProgram',
+        ])
             ->whereIn('created_by', getCompanyAndUsersId());
 
         $this->applyEmployeeFilters($query, $request);
@@ -1252,12 +1260,12 @@ class HrReportController extends Controller
     public function exportResignationReport(Request $request): StreamedResponse
     {
         $query = Resignation::with([
-                'employee',
-                'employee.employee',
-                'employee.employee.branch',
-                'employee.employee.department',
-                'approver',
-            ])
+            'employee',
+            'employee.employee',
+            'employee.employee.branch',
+            'employee.employee.department',
+            'approver',
+        ])
             ->whereIn('created_by', getCompanyAndUsersId());
 
         $this->applyEmployeeFilters($query, $request);
@@ -1302,12 +1310,12 @@ class HrReportController extends Controller
     public function exportTerminationReport(Request $request): StreamedResponse
     {
         $query = Termination::with([
-                'employee',
-                'employee.employee',
-                'employee.employee.branch',
-                'employee.employee.department',
-                'approver',
-            ])
+            'employee',
+            'employee.employee',
+            'employee.employee.branch',
+            'employee.employee.department',
+            'approver',
+        ])
             ->whereIn('created_by', getCompanyAndUsersId());
 
         $this->applyEmployeeFilters($query, $request);

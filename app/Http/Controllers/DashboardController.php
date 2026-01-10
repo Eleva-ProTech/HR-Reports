@@ -161,7 +161,6 @@ class DashboardController extends Controller
         $pendingLeaves = \App\Models\LeaveApplication::whereIn('created_by', $companyUserIds)
             ->where('status', 'pending')->count();
 
-
         $onLeaveToday = \App\Models\LeaveApplication::whereIn('created_by', $companyUserIds)
             ->where('status', 'approved');
 
@@ -171,6 +170,86 @@ class DashboardController extends Controller
             $onLeaveToday = $onLeaveToday->whereDate('start_date', '<=', today())
                 ->whereDate('end_date', '>=', today())->count();
         }
+
+        // HR Report Stats - Absence Report
+        $totalAbsences = \App\Models\AttendanceRecord::whereIn('created_by', $companyUserIds)
+            ->where(function ($builder) {
+                $builder->orWhere('status', 'on_leave');
+            })->count();
+        $uniqueAbsentEmployees = \App\Models\AttendanceRecord::whereIn('created_by', $companyUserIds)
+            ->where(function ($builder) {
+                $builder->orWhere('status', 'on_leave');
+            })->distinct('employee_id')->count('employee_id');
+        $currentMonthAbsences = \App\Models\AttendanceRecord::whereIn('created_by', $companyUserIds)
+            ->where(function ($builder) {
+                $builder->orWhere('status', 'on_leave');
+            })
+            ->whereBetween('date', [now()->startOfMonth(), now()->endOfMonth()])
+            ->count();
+
+        // HR Report Stats - Lateness Report
+        $totalLateDays = \App\Models\AttendanceRecord::whereIn('created_by', $companyUserIds)
+            ->where('is_late', true)->count();
+        $uniqueLateEmployees = \App\Models\AttendanceRecord::whereIn('created_by', $companyUserIds)
+            ->where('is_late', true)->distinct('employee_id')->count('employee_id');
+        $currentMonthLateDays = \App\Models\AttendanceRecord::whereIn('created_by', $companyUserIds)
+            ->where('is_late', true)
+            ->whereBetween('date', [now()->startOfMonth(), now()->endOfMonth()])
+            ->count();
+
+        // HR Report Stats - Leave Report
+        $totalLeaveRequests = \App\Models\LeaveApplication::whereIn('created_by', $companyUserIds)->count();
+        $approvedLeaveRequests = \App\Models\LeaveApplication::whereIn('created_by', $companyUserIds)
+            ->where('status', 'approved')->count();
+        $totalLeaveDays = \App\Models\LeaveApplication::whereIn('created_by', $companyUserIds)
+            ->sum('total_days');
+
+        // HR Report Stats - Warning Report
+        $totalWarnings = \App\Models\Warning::whereIn('created_by', $companyUserIds)->count();
+        $openWarnings = \App\Models\Warning::whereIn('created_by', $companyUserIds)
+            ->whereIn('status', ['draft', 'issued'])->count();
+        $acknowledgedWarnings = \App\Models\Warning::whereIn('created_by', $companyUserIds)
+            ->where('status', 'acknowledged')->count();
+        $expiredWarnings = \App\Models\Warning::whereIn('created_by', $companyUserIds)
+            ->where('status', 'expired')->count();
+
+        // HR Report Stats - Expired Contracts Report
+        $today = \Carbon\Carbon::today();
+        $totalExpiredContracts = \App\Models\EmployeeContract::whereIn('created_by', $companyUserIds)
+            ->where(function ($builder) use ($today) {
+                $builder->whereDate('end_date', '<', $today)
+                    ->orWhere(function ($q) use ($today) {
+                        $q->whereNull('end_date')
+                            ->whereDate('start_date', '<', $today->copy()->subYears(2));
+                    });
+            })->count();
+        $contractsExpiringSoon = \App\Models\EmployeeContract::whereIn('created_by', $companyUserIds)
+            ->whereNotNull('end_date')
+            ->whereBetween('end_date', [$today, $today->copy()->addDays(30)])
+            ->count();
+
+        // HR Report Stats - Training Report
+        $totalTrainingsAssigned = \App\Models\EmployeeTraining::whereIn('created_by', $companyUserIds)->count();
+        $completedTrainings = \App\Models\EmployeeTraining::whereIn('created_by', $companyUserIds)
+            ->where('status', 'completed')->count();
+        $inProgressTrainings = \App\Models\EmployeeTraining::whereIn('created_by', $companyUserIds)
+            ->where('status', 'in_progress')->count();
+        $failedTrainings = \App\Models\EmployeeTraining::whereIn('created_by', $companyUserIds)
+            ->where('status', 'failed')->count();
+
+        // HR Report Stats - Resignation Report
+        $totalResignations = \App\Models\Resignation::whereIn('created_by', $companyUserIds)->count();
+        $pendingResignations = \App\Models\Resignation::whereIn('created_by', $companyUserIds)
+            ->where('status', 'pending')->count();
+        $approvedResignations = \App\Models\Resignation::whereIn('created_by', $companyUserIds)
+            ->where('status', 'approved')->count();
+
+        // HR Report Stats - Termination Report
+        $totalTerminations = \App\Models\Termination::whereIn('created_by', $companyUserIds)->count();
+        $pendingTerminations = \App\Models\Termination::whereIn('created_by', $companyUserIds)
+            ->where('status', 'pending')->count();
+        $approvedTerminations = \App\Models\Termination::whereIn('created_by', $companyUserIds)
+            ->where('status', 'approved')->count();
 
 
 
@@ -310,7 +389,40 @@ class DashboardController extends Controller
                 'pendingLeaves' => $pendingLeaves,
                 'onLeaveToday' => $onLeaveToday,
                 'activeJobPostings' => $activeJobPostings,
-                'totalCandidates' => $totalCandidates
+                'totalCandidates' => $totalCandidates,
+                // HR Report Stats - Absence
+                'totalAbsences' => $totalAbsences,
+                'uniqueAbsentEmployees' => $uniqueAbsentEmployees,
+                'currentMonthAbsences' => $currentMonthAbsences,
+                // HR Report Stats - Lateness
+                'totalLateDays' => $totalLateDays,
+                'uniqueLateEmployees' => $uniqueLateEmployees,
+                'currentMonthLateDays' => $currentMonthLateDays,
+                // HR Report Stats - Leave
+                'totalLeaveRequests' => $totalLeaveRequests,
+                'approvedLeaveRequests' => $approvedLeaveRequests,
+                'totalLeaveDays' => $totalLeaveDays,
+                // HR Report Stats - Warnings
+                'totalWarnings' => $totalWarnings,
+                'openWarnings' => $openWarnings,
+                'acknowledgedWarnings' => $acknowledgedWarnings,
+                'expiredWarnings' => $expiredWarnings,
+                // HR Report Stats - Contracts
+                'totalExpiredContracts' => $totalExpiredContracts,
+                'contractsExpiringSoon' => $contractsExpiringSoon,
+                // HR Report Stats - Training
+                'totalTrainingsAssigned' => $totalTrainingsAssigned,
+                'completedTrainings' => $completedTrainings,
+                'inProgressTrainings' => $inProgressTrainings,
+                'failedTrainings' => $failedTrainings,
+                // HR Report Stats - Resignations
+                'totalResignations' => $totalResignations,
+                'pendingResignations' => $pendingResignations,
+                'approvedResignations' => $approvedResignations,
+                // HR Report Stats - Terminations
+                'totalTerminations' => $totalTerminations,
+                'pendingTerminations' => $pendingTerminations,
+                'approvedTerminations' => $approvedTerminations,
             ],
             'charts' => [
                 'departmentStats' => $departmentStats,

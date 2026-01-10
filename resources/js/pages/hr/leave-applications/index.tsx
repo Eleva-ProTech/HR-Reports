@@ -177,7 +177,7 @@ export default function LeaveApplications() {
     const statusText = status === 'approved' ? t('Approving') : t('Rejecting');
     toast.loading(`${statusText} leave application...`);
 
-    router.put(route('hr.leave-applications.update-status', application.id), { 
+    router.put(route('hr.leave-applications.update-status', application.id), {
       status,
       manager_comments: '' // Add empty manager_comments to avoid undefined key error
     }, {
@@ -244,7 +244,7 @@ export default function LeaveApplications() {
       label: t('Leave Type'),
       render: (value: any, row: any) => (
         <div className="flex items-center gap-2">
-          <div 
+          <div
             className="w-3 h-3 rounded-full"
             style={{ backgroundColor: row.leave_type?.color }}
           />
@@ -258,7 +258,7 @@ export default function LeaveApplications() {
       sortable: true,
       // render: (value: string) => new Date(value).toLocaleDateString()
       render: (value: string) => window.appSettings?.formatDateTime(value, false) || new Date(value).toLocaleDateString()
-      
+
     },
     {
       key: 'end_date',
@@ -467,6 +467,7 @@ export default function LeaveApplications() {
               label: t('Employee'),
               type: 'select',
               required: true,
+              searchable: true,
               options: employees ? employees.map((emp: any) => ({
                 value: emp.id.toString(),
                 label: emp.name
@@ -485,9 +486,29 @@ export default function LeaveApplications() {
             { name: 'start_date', label: t('Start Date'), type: 'date', required: true },
             { name: 'end_date', label: t('End Date'), type: 'date', required: true },
             { name: 'reason', label: t('Reason'), type: 'textarea', required: true },
-            { 
-              name: 'attachment', 
-              label: t('Attachment'), 
+            {
+              name: 'supervisor',
+              label: t('Supervisor'),
+              type: 'text'
+            },
+            {
+              name: 'shift',
+              label: t('Shift'),
+              type: 'text'
+            },
+            {
+              name: 'dayoff',
+              label: t('Day Off'),
+              type: 'text'
+            },
+            {
+              name: 'comment',
+              label: t('Comment'),
+              type: 'textarea'
+            },
+            {
+              name: 'attachment',
+              label: t('Attachment'),
               type: 'custom',
               render: (field, formData, handleChange) => (
                 <div>

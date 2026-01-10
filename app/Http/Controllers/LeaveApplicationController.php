@@ -82,6 +82,10 @@ class LeaveApplicationController extends Controller
             'end_date' => 'required|date|after_or_equal:start_date',
             'reason' => 'required|string',
             'attachment' => 'nullable|string',
+            'supervisor' => 'nullable|string',
+            'shift' => 'nullable|string',
+            'dayoff' => 'nullable|string',
+            'comment' => 'nullable|string',
         ]);
 
         $validated['created_by'] = creatorId();
@@ -104,9 +108,12 @@ class LeaveApplicationController extends Controller
         $validated['leave_policy_id'] = $leavePolicy->id;
 
         // Validate days per application
-        if ($validated['total_days'] < $leavePolicy->min_days_per_application ||
-            $validated['total_days'] > $leavePolicy->max_days_per_application) {
-            return redirect()->back()->with('error',
+        if (
+            $validated['total_days'] < $leavePolicy->min_days_per_application ||
+            $validated['total_days'] > $leavePolicy->max_days_per_application
+        ) {
+            return redirect()->back()->with(
+                'error',
                 __('Leave days must be between :min and :max days.', [
                     'min' => $leavePolicy->min_days_per_application,
                     'max' => $leavePolicy->max_days_per_application
@@ -137,7 +144,8 @@ class LeaveApplicationController extends Controller
 
         // Check if enough balance available
         if ($leaveBalance->remaining_days < $validated['total_days']) {
-            return redirect()->back()->with('error',
+            return redirect()->back()->with(
+                'error',
                 __('Insufficient leave balance. Available: :available days, Requested: :requested days', [
                     'available' => $leaveBalance->remaining_days,
                     'requested' => $validated['total_days']
@@ -178,6 +186,10 @@ class LeaveApplicationController extends Controller
                     'end_date' => 'required|date|after_or_equal:start_date',
                     'reason' => 'required|string',
                     'attachment' => 'nullable|string',
+                    'supervisor' => 'nullable|string',
+                    'shift' => 'nullable|string',
+                    'dayoff' => 'nullable|string',
+                    'comment' => 'nullable|string',
                 ]);
 
                 // Calculate total days
@@ -236,6 +248,10 @@ class LeaveApplicationController extends Controller
         $validated = $request->validate([
             'status' => 'required|in:approved,rejected',
             'manager_comments' => 'nullable|string',
+            'supervisor' => 'nullable|string',
+            'shift' => 'nullable|string',
+            'dayoff' => 'nullable|string',
+            'comment' => 'nullable|string',
         ]);
 
         $leaveApplication = LeaveApplication::where('id', $leaveApplicationId)
@@ -261,7 +277,8 @@ class LeaveApplicationController extends Controller
                         ->first();
 
                     if ($leaveBalance && $leaveBalance->remaining_days < $leaveApplication->total_days) {
-                        return redirect()->back()->with('error',
+                        return redirect()->back()->with(
+                            'error',
                             __('Cannot approve: Insufficient leave balance. Available: :available days, Required: :required days', [
                                 'available' => $leaveBalance->remaining_days,
                                 'required' => $leaveApplication->total_days

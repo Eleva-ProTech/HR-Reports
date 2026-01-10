@@ -213,7 +213,7 @@ class AttendanceRecord extends BaseModel
     {
         return $value ? \Carbon\Carbon::parse($value)->format('H:i') : null;
     }
-    
+
     /**
      * Format clock out time for frontend (H:i format).
      */

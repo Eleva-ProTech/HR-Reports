@@ -26,7 +26,7 @@ class DeployApp extends Command
     public function handle(): void
     {
         $root = base_path();
-        $output = shell_exec("cd $root && git pull origin main && composer install --no-dev --optimize-autoloader && php artisan migrate --force && php artisan config:cache && php artisan route:cache && php artisan view:cache");
+        $output = shell_exec("cd $root && git pull origin main && composer install --no-dev --optimize-autoloader && npm run build && php artisan migrate --force && php artisan config:cache && php artisan route:cache && php artisan view:cache");
         $this->info($output);
     }
 }

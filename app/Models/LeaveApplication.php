@@ -20,6 +20,10 @@ class LeaveApplication extends BaseModel
         'attachment',
         'status',
         'manager_comments',
+        'supervisor',
+        'shift',
+        'dayoff',
+        'comment',
         'approved_by',
         'approved_at',
         'created_by'

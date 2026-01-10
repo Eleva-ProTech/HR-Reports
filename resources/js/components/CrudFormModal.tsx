@@ -17,6 +17,70 @@ import { useTranslation } from 'react-i18next';
 import MediaPicker from '@/components/MediaPicker';
 import DependentDropdown from '@/components/DependentDropdown';
 
+// Searchable Select Component
+function SearchableSelectField({ field, options, currentValue, displayText, onChange, error, disabled }: any) {
+  const { t } = useTranslation();
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredOptions = field.relation
+    ? options.filter((opt: any) =>
+        opt[field.relation.labelField]
+          ?.toLowerCase()
+          .includes(searchTerm.toLowerCase())
+      )
+    : options.filter((opt: any) =>
+        opt.label?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+
+  return (
+    <Select
+      value={currentValue}
+      onValueChange={onChange}
+      disabled={disabled}
+    >
+      <SelectTrigger className={error ? 'border-red-500' : ''}>
+        <SelectValue placeholder={field.placeholder || `Select ${field.label}`}>
+          {displayText || (field.placeholder || `Select ${field.label}`)}
+        </SelectValue>
+      </SelectTrigger>
+      <SelectContent className="z-[60000]">
+        <div className="flex items-center border-b px-3 pb-2">
+          <Input
+            placeholder={`Search ${field.label}...`}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="h-8 w-full border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
+          />
+        </div>
+        <ScrollArea className="max-h-[200px]">
+          {filteredOptions.length === 0 ? (
+            <div className="py-6 text-center text-sm text-gray-500">
+              {t('No results found')}
+            </div>
+          ) : field.relation ? (
+            filteredOptions.map((option: any) => (
+              <SelectItem
+                key={option[field.relation.valueField]}
+                value={String(option[field.relation.valueField])}
+              >
+                {option[field.relation.labelField]}
+              </SelectItem>
+            ))
+          ) : (
+            filteredOptions.map((option: any) => (
+              <SelectItem key={option.value} value={String(option.value)}>
+                {option.label}
+              </SelectItem>
+            ))
+          )}
+        </ScrollArea>
+      </SelectContent>
+    </Select>
+  );
+}
+
 interface CrudFormModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -343,6 +407,21 @@ export function CrudFormModal({
           ? (field.relation ? selectedOption[field.relation!.labelField] : selectedOption.label)
           : '';
 
+        // For searchable selects, render SearchableSelect component
+        if (field.searchable) {
+          return (
+            <SearchableSelectField
+              field={field}
+              options={options}
+              currentValue={currentValue}
+              displayText={displayText}
+              onChange={(value) => handleChange(field.name, value)}
+              error={errors[field.name]}
+              disabled={mode === 'view'}
+            />
+          );
+        }
+
         return (
           <Select
             value={currentValue}
@@ -514,7 +593,7 @@ export function CrudFormModal({
         const dependentValues: Record<string, string> = {};
         field.dependentConfig?.forEach((depField) => {
           dependentValues[depField.name] = formData[depField.name] || '';
-          
+
         });
         return (
           <DependentDropdown

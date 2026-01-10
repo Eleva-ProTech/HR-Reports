@@ -167,14 +167,14 @@ class AttendanceRecordController extends Controller
 
                 // Get employee with shift and policy
                 $employee = \App\Models\Employee::where('user_id', $validated['employee_id'])->first();
-                
+
                 // Use employee's assigned shift and policy, or get defaults
-                $shift = $employee && $employee->shift_id ? 
-                    Shift::find($employee->shift_id) : 
+                $shift = $employee && $employee->shift_id ?
+                    Shift::find($employee->shift_id) :
                     Shift::whereIn('created_by', getCompanyAndUsersId())->where('status', 'active')->first();
-                    
-                $policy = $employee && $employee->attendance_policy_id ? 
-                    AttendancePolicy::find($employee->attendance_policy_id) : 
+
+                $policy = $employee && $employee->attendance_policy_id ?
+                    AttendancePolicy::find($employee->attendance_policy_id) :
                     AttendancePolicy::whereIn('created_by', getCompanyAndUsersId())->where('status', 'active')->first();
 
                 $validated['shift_id'] = $shift?->id;
@@ -224,20 +224,20 @@ class AttendanceRecordController extends Controller
             ]);
 
             $today = Carbon::today();
-            $now = Carbon::now();            
+            $now = Carbon::now();
 
             // Check if already clocked in today
             $existingRecord = AttendanceRecord::where('employee_id', $validated['employee_id'])
-            ->where('date', $today)
-            ->first();
-            
+                ->where('date', $today)
+                ->first();
+
             if ($existingRecord && $existingRecord->clock_in) {
                 return redirect()->back()->with('error', __('Already clocked in today.'));
             }
 
             // Get employee with shift and policy
             $employee = \App\Models\Employee::where('user_id', $validated['employee_id'])->first();
-            
+
             if (!$employee) {
                 return redirect()->back()->with('error', __('Employee profile not found.'));
             }

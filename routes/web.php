@@ -84,6 +84,7 @@ use App\Http\Controllers\ReviewCycleController;
 use App\Http\Controllers\EmployeeReviewController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Artisan;
 
 Route::get('/', [LandingPageController::class, 'show'])->name('home');
 
@@ -1155,7 +1156,7 @@ Route::middleware(['auth', 'verified', 'setting'])->group(function () {
         })->name('plan-requests.index');
 
         // Companies routes
-        Route::middleware(['checksaas','permission:manage-companies'])->group(function () {
+        Route::middleware(['checksaas', 'permission:manage-companies'])->group(function () {
             Route::get('companies', [CompanyController::class, 'index'])->middleware('permission:manage-companies')->name('companies.index');
             Route::post('companies', [CompanyController::class, 'store'])->middleware('permission:create-companies')->name('companies.store');
             Route::put('companies/{company}', [CompanyController::class, 'update'])->middleware('permission:edit-companies')->name('companies.update');
@@ -1168,7 +1169,7 @@ Route::middleware(['auth', 'verified', 'setting'])->group(function () {
 
 
         // Coupons routes
-        Route::middleware(['checksaas','permission:manage-coupons'])->group(function () {
+        Route::middleware(['checksaas', 'permission:manage-coupons'])->group(function () {
             Route::get('coupons', [CouponController::class, 'index'])->middleware('permission:manage-coupons')->name('coupons.index');
             Route::get('coupons/{coupon}', [CouponController::class, 'show'])->middleware('permission:view-coupons')->name('coupons.show');
             Route::post('coupons', [CouponController::class, 'store'])->middleware('permission:create-coupons')->name('coupons.store');
@@ -1178,7 +1179,7 @@ Route::middleware(['auth', 'verified', 'setting'])->group(function () {
         });
 
         // Plan Requests routes
-        Route::middleware(['checksaas','permission:manage-plan-requests'])->group(function () {
+        Route::middleware(['checksaas', 'permission:manage-plan-requests'])->group(function () {
             Route::get('plan-requests', [PlanRequestController::class, 'index'])->middleware('permission:manage-plan-requests')->name('plan-requests.index');
             Route::post('plan-requests/{planRequest}/approve', [PlanRequestController::class, 'approve'])->middleware('permission:approve-plan-requests')->name('plan-requests.approve');
             Route::post('plan-requests/{planRequest}/reject', [PlanRequestController::class, 'reject'])->middleware('permission:reject-plan-requests')->name('plan-requests.reject');
@@ -1187,7 +1188,7 @@ Route::middleware(['auth', 'verified', 'setting'])->group(function () {
 
 
         // Referral routes
-        Route::middleware(['checksaas','permission:manage-referral'])->group(function () {
+        Route::middleware(['checksaas', 'permission:manage-referral'])->group(function () {
             Route::get('referral', [ReferralController::class, 'index'])->middleware('permission:manage-referral')->name('referral.index');
             Route::get('referral/referred-users', [ReferralController::class, 'getReferredUsers'])->middleware('permission:manage-users-referral')->name('referral.referred-users');
             Route::post('referral/settings', [ReferralController::class, 'updateSettings'])->middleware('permission:manage-setting-referral')->name('referral.settings.update');

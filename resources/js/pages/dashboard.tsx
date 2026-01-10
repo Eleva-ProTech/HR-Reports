@@ -23,6 +23,39 @@ interface CompanyDashboardData {
     onLeaveToday: number;
     activeJobPostings: number;
     totalCandidates: number;
+    // HR Report Stats - Absence
+    totalAbsences: number;
+    uniqueAbsentEmployees: number;
+    currentMonthAbsences: number;
+    // HR Report Stats - Lateness
+    totalLateDays: number;
+    uniqueLateEmployees: number;
+    currentMonthLateDays: number;
+    // HR Report Stats - Leave
+    totalLeaveRequests: number;
+    approvedLeaveRequests: number;
+    totalLeaveDays: number;
+    // HR Report Stats - Warnings
+    totalWarnings: number;
+    openWarnings: number;
+    acknowledgedWarnings: number;
+    expiredWarnings: number;
+    // HR Report Stats - Contracts
+    totalExpiredContracts: number;
+    contractsExpiringSoon: number;
+    // HR Report Stats - Training
+    totalTrainingsAssigned: number;
+    completedTrainings: number;
+    inProgressTrainings: number;
+    failedTrainings: number;
+    // HR Report Stats - Resignations
+    totalResignations: number;
+    pendingResignations: number;
+    approvedResignations: number;
+    // HR Report Stats - Terminations
+    totalTerminations: number;
+    pendingTerminations: number;
+    approvedTerminations: number;
   };
   charts: {
     departmentStats: Array<{name: string; value: number; color: string}>;
@@ -209,6 +242,185 @@ export default function Dashboard({ dashboardData }: { dashboardData: CompanyDas
           {/*    </div>*/}
           {/*  </CardContent>*/}
           {/*</Card>*/}
+        </div>
+
+        {/* HR Report Statistics Section */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">{t('HR Reports Overview')}</h3>
+
+          {/* Absence & Lateness Stats */}
+          <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">{t('Total Absences')}</p>
+                    <p className="mt-2 text-2xl font-bold">{stats.totalAbsences || 0}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{stats.uniqueAbsentEmployees || 0} {t('employees')}</p>
+                  </div>
+                  <div className="rounded-full bg-red-100 p-3 dark:bg-red-900">
+                    <Users className="h-5 w-5 text-red-600 dark:text-red-400" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">{t('Month Absences')}</p>
+                    <p className="mt-2 text-2xl font-bold">{stats.currentMonthAbsences || 0}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{t('current month')}</p>
+                  </div>
+                  <div className="rounded-full bg-orange-100 p-3 dark:bg-orange-900">
+                    <Calendar className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">{t('Total Late Days')}</p>
+                    <p className="mt-2 text-2xl font-bold">{stats.totalLateDays || 0}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{stats.uniqueLateEmployees || 0} {t('employees')}</p>
+                  </div>
+                  <div className="rounded-full bg-yellow-100 p-3 dark:bg-yellow-900">
+                    <Clock className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">{t('Month Late Days')}</p>
+                    <p className="mt-2 text-2xl font-bold">{stats.currentMonthLateDays || 0}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{t('current month')}</p>
+                  </div>
+                  <div className="rounded-full bg-amber-100 p-3 dark:bg-amber-900">
+                    <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Leave Stats */}
+          <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">{t('Total Leave Requests')}</p>
+                    <p className="mt-2 text-2xl font-bold">{stats.totalLeaveRequests || 0}</p>
+                    <p className="text-xs text-green-600 mt-1">{stats.approvedLeaveRequests || 0} {t('approved')}</p>
+                  </div>
+                  <div className="rounded-full bg-blue-100 p-3 dark:bg-blue-900">
+                    <Calendar className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">{t('Total Leave Days')}</p>
+                    <p className="mt-2 text-2xl font-bold">{stats.totalLeaveDays || 0}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{t('days taken')}</p>
+                  </div>
+                  <div className="rounded-full bg-indigo-100 p-3 dark:bg-indigo-900">
+                    <Calendar className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">{t('Total Warnings')}</p>
+                    <p className="mt-2 text-2xl font-bold">{stats.totalWarnings || 0}</p>
+                    <p className="text-xs text-orange-600 mt-1">{stats.openWarnings || 0} {t('open')}</p>
+                  </div>
+                  <div className="rounded-full bg-red-100 p-3 dark:bg-red-900">
+                    <Bell className="h-5 w-5 text-red-600 dark:text-red-400" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Contract, Training & Resignation Stats */}
+          <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">{t('Expired Contracts')}</p>
+                    <p className="mt-2 text-2xl font-bold">{stats.totalExpiredContracts || 0}</p>
+                    <p className="text-xs text-orange-600 mt-1">{stats.contractsExpiringSoon || 0} {t('expiring soon')}</p>
+                  </div>
+                  <div className="rounded-full bg-purple-100 p-3 dark:bg-purple-900">
+                    <Briefcase className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">{t('Training Programs')}</p>
+                    <p className="mt-2 text-2xl font-bold">{stats.totalTrainingsAssigned || 0}</p>
+                    <p className="text-xs text-green-600 mt-1">{stats.completedTrainings || 0} {t('completed')}</p>
+                  </div>
+                  <div className="rounded-full bg-green-100 p-3 dark:bg-green-900">
+                    <Users className="h-5 w-5 text-green-600 dark:text-green-400" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">{t('Resignations')}</p>
+                    <p className="mt-2 text-2xl font-bold">{stats.totalResignations || 0}</p>
+                    <p className="text-xs text-yellow-600 mt-1">{stats.pendingResignations || 0} {t('pending')}</p>
+                  </div>
+                  <div className="rounded-full bg-yellow-100 p-3 dark:bg-yellow-900">
+                    <UserPlus className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">{t('Terminations')}</p>
+                    <p className="mt-2 text-2xl font-bold">{stats.totalTerminations || 0}</p>
+                    <p className="text-xs text-red-600 mt-1">{stats.pendingTerminations || 0} {t('pending')}</p>
+                  </div>
+                  <div className="rounded-full bg-red-100 p-3 dark:bg-red-900">
+                    <Users className="h-5 w-5 text-red-600 dark:text-red-400" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
 
         {/* Charts Section */}
