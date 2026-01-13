@@ -135,6 +135,35 @@ const getImagePath = (path: string, pageProps?: any): string => {
   }
 }
 
+/**
+ * Get full media URL - handles both simple filenames and full paths
+ * Converts stored filenames to full accessible URLs
+ * Examples:
+ * - "qFG1ZFnbxfDiwphZMXYVnql1WZbgSQty2aOqe4Gg.pdf" -> "http://127.0.0.1:8000/storage/media/qFG1ZFnbxfDiwphZMXYVnql1WZbgSQty2aOqe4Gg.pdf"
+ * - "storage/media/qFG1ZFnbxfDiwphZMXYVnql1WZbgSQty2aOqe4Gg.pdf" -> "http://127.0.0.1:8000/storage/media/qFG1ZFnbxfDiwphZMXYVnql1WZbgSQty2aOqe4Gg.pdf"
+ */
+const getMediaUrl = (path: string): string => {
+  if (!path) return '';
+
+  // If it's already a full URL, return as is
+  if (path.startsWith('http')) {
+    return path;
+  }
+
+  // If it starts with /, just prepend the origin
+  if (path.startsWith('/')) {
+    return window.location.origin + path;
+  }
+
+  // If it contains storage/media, prepend the origin and ensure single slash
+  if (path.includes('storage/media')) {
+    return window.location.origin + '/' + path;
+  }
+
+  // Otherwise, prepend /storage/media/ (for simple filenames)
+  return window.location.origin + '/storage/media/' + path;
+};
+
 
 /**
  * Format currency based on saved settings
@@ -160,7 +189,7 @@ const getImagePath = (path: string, pageProps?: any): string => {
 //     const symbol = getCurrencySymbol();
 //     const space = currencySymbolSpace ? ' ' : '';
 
-//     return currencySymbolPosition === 'before' 
+//     return currencySymbolPosition === 'before'
 //       ? `${symbol}${space}${formattedNumber}`
 //       : `${formattedNumber}${space}${symbol}`;
 //   } catch {
@@ -189,7 +218,7 @@ const getImagePath = (path: string, pageProps?: any): string => {
 //     const symbol = getAdminSetting('currencySymbol') || '$';
 //     const space = currencySymbolSpace ? ' ' : '';
 
-//     return currencySymbolPosition === 'before' 
+//     return currencySymbolPosition === 'before'
 //       ? `${symbol}${space}${formattedNumber}`
 //       : `${formattedNumber}${space}${symbol}`;
 //   } catch {
@@ -225,5 +254,6 @@ export {
   // getCurrencySymbol,
   // getAdminCurrencySymbol
   getImagePath,
+  getMediaUrl
 
 }

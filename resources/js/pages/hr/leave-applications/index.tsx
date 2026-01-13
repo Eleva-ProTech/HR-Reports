@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { PageTemplate } from '@/components/page-template';
 import { usePage, router } from '@inertiajs/react';
-import { Plus, CheckCircle, XCircle } from 'lucide-react';
+import { Plus, FileText, Download } from 'lucide-react';
 import MediaPicker from '@/components/MediaPicker';
 import { hasPermission } from '@/utils/authorization';
 import { CrudTable } from '@/components/CrudTable';
@@ -295,6 +295,52 @@ export default function LeaveApplications() {
       label: t('Applied On'),
       sortable: true,
       render: (value: string) => window.appSettings?.formatDateTime(value, false) || new Date(value).toLocaleDateString()
+    },
+    {
+      key: 'attachment',
+      label: t('Attachment'),
+      render: (value: string, row: any) => {
+        if (!value) {
+          return <span className="text-gray-400 text-sm">-</span>;
+        }
+
+        // Construct the proper URL
+        let displayUrl = value;
+        if (!value.startsWith('http')) {
+          if (!value.startsWith('/')) {
+            if (!value.includes('storage/media')) {
+              displayUrl = `/storage/media/${value}`;
+            } else {
+              displayUrl = `/${value}`;
+            }
+          }
+        }
+
+        const fileName = value.split('/').pop() || 'attachment';
+
+        return (
+          <div className="flex items-center gap-2">
+            <a
+              href={displayUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-blue-500 hover:text-blue-700 hover:underline text-sm"
+              title={t('Preview attachment')}
+            >
+              <FileText className="h-4 w-4" />
+              <span>{fileName.substring(0, 20)}...</span>
+            </a>
+            <a
+              href={displayUrl}
+              download
+              className="inline-flex items-center text-green-500 hover:text-green-700"
+              title={t('Download attachment')}
+            >
+              <Download className="h-4 w-4" />
+            </a>
+          </div>
+        );
+      }
     }
   ];
 
@@ -510,16 +556,45 @@ export default function LeaveApplications() {
               name: 'attachment',
               label: t('Attachment'),
               type: 'custom',
-              render: (field, formData, handleChange) => (
-                <div>
-                  <MediaPicker
-                    value={String(formData[field.name] || '')}
-                    onChange={(url) => handleChange(field.name, url)}
-                    placeholder={t('Select attachment file...')}
-                  />
-                </div>
-              ),
-              helpText: t('Upload PDF, DOC, DOCX, JPG, JPEG, PNG files')
+              render: (field, formData, handleChange) => {
+                // Construct proper display URL
+                let displayUrl = formData[field.name];
+                if (displayUrl && !displayUrl.startsWith('http')) {
+                  if (!displayUrl.startsWith('/')) {
+                    if (!displayUrl.includes('storage/media')) {
+                      displayUrl = `/storage/media/${displayUrl}`;
+                    } else {
+                      displayUrl = `/${displayUrl}`;
+                    }
+                  }
+                }
+
+                return (
+                  <div>
+                    <MediaPicker
+                      value={String(formData[field.name] || '')}
+                      onChange={(url) => handleChange(field.name, url)}
+                      placeholder={t('Click to upload or select from Media Library')}
+                    />
+                    {formData[field.name] && displayUrl && (
+                      <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md border border-blue-200 dark:border-blue-800">
+                        <div className="flex items-center gap-2 text-sm text-blue-700 dark:text-blue-400">
+                          <FileText className="h-4 w-4" />
+                          <a
+                            href={displayUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:underline font-medium"
+                          >
+                            {t('Preview attachment')}
+                          </a>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              },
+              helpText: t('Upload PDF, DOC, DOCX, JPG, JPEG, PNG files from your device or Media Library')
             }
           ],
           modalSize: 'lg'
